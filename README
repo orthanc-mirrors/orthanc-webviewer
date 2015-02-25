@@ -1,0 +1,64 @@
+Web Viewer plugin for Orthanc
+=============================
+
+
+General Information
+-------------------
+
+This repository contains the source code of a plugin implementing a
+Web viewer for Orthanc, the lightweight, RESTful DICOM server.
+
+
+Dependencies
+------------
+
+The Web viewer is based upon the following projects:
+
+* Cornerstone, a client-side JavaScript library to display medical
+  images in Web browsers, by Chris Hafey <chafey@gmail.com>:
+  https://github.com/chafey/cornerstone
+
+* GDCM, an open-source implementation of the DICOM standard with
+  advanced features for image decoding, by Mathieu Malaterre
+  <mathieu.malaterre@gmail.com>:
+  http://sourceforge.net/projects/gdcm/
+
+
+Supported Platforms
+-------------------
+
+Currently, the supported platforms are:
+
+* Linux 32bit.
+* Linux 64bit.
+* Windows 32bit.
+
+
+Build Instructions
+------------------
+
+See: ./Resources/BuildInstructions.txt
+
+
+Licensing
+---------
+
+The Web viewer plugin for Orthanc is licensed under the AGPL license.
+
+We also kindly ask scientific works and clinical studies that make
+use of Orthanc to cite Orthanc in their associated publications.
+Similarly, we ask open-source and closed-source products that make
+use of Orthanc to warn us about this use. You can cite our work
+using the following BibTeX entry:
+
+@inproceedings{Jodogne:ISBI2013,
+  author = {Jodogne, S. and Bernard, C. and Devillers, M. and Lenaerts, E. and Coucke, P.},
+  title = {Orthanc -- {A} Lightweight, {REST}ful {DICOM} Server for Healthcare and Medical Research},
+  booktitle={Biomedical Imaging ({ISBI}), {IEEE} 10th International Symposium on}, 
+  year={2013}, 
+  pages={190-193}, 
+  ISSN={1945-7928},
+  month=apr,
+  url={http://ieeexplore.ieee.org/xpl/articleDetails.jsp?tp=&arnumber=6556444},
+  address={San Francisco, {CA}, {USA}}
+}
