@@ -391,17 +391,8 @@ $(document).ready(function() {
     cache: false,
     async: true,
     success: function(series) {
-      var unstable = !series.IsStable;
-
-      if (unstable &&
-          'Status' in series &&
-          series.Status == 'Complete') {
-        // The series is not tagged as stable by Orthanc, but all the
-        // expected instances are already available.
-        unstable = false;
-      }
-
-      if (unstable) {
+      if (!series.IsStable && 
+          series.Status != 'Complete') {
         $('#unstable').show();
       }
     }
