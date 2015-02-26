@@ -288,7 +288,7 @@ namespace OrthancPlugins
         
         if (a == b)
         {
-          windowWidth = 127.5f;  // Arbitrary value
+          windowWidth = 256.0f;  // Arbitrary value
         }
         else
         {
@@ -303,7 +303,7 @@ namespace OrthancPlugins
         json["maxPixelValue"] = 255;
         json["color"] = true;
         windowCenter = 127.5f;
-        windowWidth = 127.5f;
+        windowWidth = 256.0f;
         break;
 
       default:
