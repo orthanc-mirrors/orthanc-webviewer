@@ -346,6 +346,8 @@ $(document).ready(function() {
     text: false
   });
 
+  $('#unstable').tooltip();
+
   var series = window.url('?series', window.location.search);
   if (series == null)
     return;
@@ -381,6 +383,30 @@ $(document).ready(function() {
     return;
   }
 
+
+  $.ajax({
+    type: 'GET',
+    url: '../../series/' + series,
+    dataType: 'json',
+    cache: false,
+    async: true,
+    success: function(series) {
+      var unstable = !series.IsStable;
+
+      if (unstable &&
+          'Status' in series &&
+          series.Status == 'Complete') {
+        // The series is not tagged as stable by Orthanc, but all the
+        // expected instances are already available.
+        unstable = false;
+      }
+
+      if (unstable) {
+        $('#unstable').show();
+      }
+    }
+  });
+  
 
   var currentImageIndex = 0;
 
