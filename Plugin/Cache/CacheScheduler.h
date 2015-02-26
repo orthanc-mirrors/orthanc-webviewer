@@ -64,6 +64,10 @@ namespace OrthancPlugins
                   ICacheFactory* factory /* takes ownership */,
                   size_t  numThreads);
 
+    void SetQuota(int bundle,
+                  uint32_t maxCount,
+                  uint64_t maxSpace);
+
     void RegisterPolicy(IPrefetchPolicy* policy /* takes ownership */);
 
     void Invalidate(int bundle,

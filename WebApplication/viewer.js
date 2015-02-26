@@ -21,7 +21,6 @@
 var compression = 'jpeg95';
 
 
-
 // Prevent the access to IE
 if(navigator.appVersion.indexOf("MSIE ") != -1)
 {

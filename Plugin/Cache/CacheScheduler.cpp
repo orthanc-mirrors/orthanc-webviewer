@@ -300,6 +300,15 @@ namespace OrthancPlugins
   }
 
 
+  void CacheScheduler::SetQuota(int bundle,
+                                uint32_t maxCount,
+                                uint64_t maxSpace)
+  {
+    boost::mutex::scoped_lock lock(cacheMutex_);
+    cache_.SetBundleQuota(bundle, maxCount, maxSpace);
+  }
+
+
   void CacheScheduler::Invalidate(int bundle,
                                   const std::string& item)
   {

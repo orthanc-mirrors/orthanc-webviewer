@@ -21,6 +21,7 @@
 #include <boost/thread.hpp>
 #include <boost/lexical_cast.hpp>
 #include <EmbeddedResources.h>
+#include <boost/filesystem.hpp>
 
 #include "../Orthanc/OrthancException.h"
 #include "ViewerToolbox.h"
@@ -259,11 +260,23 @@ extern "C"
         return -1;
       }
 
-      std::string cachePath = "WebViewerCache";
-    
+      // By default, the cache of the Web viewer is located inside the
+      // "StorageDirectory" of Orthanc
+      boost::filesystem::path cachePath = GetStringValue(configuration, "StorageDirectory", ".");
+      cachePath /= "WebViewerCache";
+      int cacheSize = 100;  // By default, a cache of 100 MB is used
+
       if (configuration.isMember("WebViewer"))
       {
-        cachePath = GetStringValue(configuration["WebViewer"], "Cache", cachePath);
+        std::string key = "CachePath";
+        if (!configuration["WebViewer"].isMember(key))
+        {
+          // For backward compatibility with the initial release of the Web viewer
+          key = "Cache";
+        }
+
+        cachePath = GetStringValue(configuration["WebViewer"], key, cachePath.string());
+        cacheSize = GetIntegerValue(configuration["WebViewer"], "CacheSize", cacheSize);
         decodingThreads = GetIntegerValue(configuration["WebViewer"], "Threads", decodingThreads);
       }
 
@@ -271,17 +284,18 @@ extern "C"
                              " threads for the decoding of the DICOM images");
       OrthancPluginLogWarning(context_, message.c_str());
 
-      if (decodingThreads <= 0)
+      if (decodingThreads <= 0 ||
+          cacheSize <= 0)
       {
         throw Orthanc::OrthancException(Orthanc::ErrorCode_ParameterOutOfRange);
       }
 
-      message = "Storing the cache of the Web viewer in folder: " + cachePath;
+      message = "Storing the cache of the Web viewer in folder: " + cachePath.string();
       OrthancPluginLogWarning(context_, message.c_str());
 
    
       /* Create the cache */
-      cache_ = new CacheContext(cachePath);
+      cache_ = new CacheContext(cachePath.string());
       cache_->GetScheduler().RegisterPolicy(new ViewerPrefetchPolicy(context_));
       cache_->GetScheduler().Register(CacheBundle_SeriesInformation, 
                                       new SeriesInformationAdapter(context_, cache_->GetScheduler()), 1);
@@ -289,6 +303,16 @@ extern "C"
                                       new InstanceInformationAdapter(context_), 1);
       cache_->GetScheduler().Register(CacheBundle_DecodedImage, 
                                       new DecodedImageAdapter(context_), decodingThreads);
+
+
+      /* Set the quotas */
+      cache_->GetScheduler().SetQuota(CacheBundle_SeriesInformation, 1000, 0);    // Keep info about 1000 series
+      cache_->GetScheduler().SetQuota(CacheBundle_InstanceInformation, 10000, 0); // Keep info about 10,000 instances
+      
+      message = "Web viewer using a cache of " + boost::lexical_cast<std::string>(cacheSize) + " MB";
+      OrthancPluginLogWarning(context_, message.c_str());
+
+      cache_->GetScheduler().SetQuota(CacheBundle_DecodedImage, 0, static_cast<uint64_t>(cacheSize) * 1024 * 1024);
     }
     catch (std::runtime_error& e)
     {
