@@ -190,7 +190,7 @@ set_target_properties(OrthancWebViewer PROPERTIES
 install(
   TARGETS OrthancWebViewer
   RUNTIME DESTINATION lib    # Destination for Windows
-  LIBRARY DESTINATION lib    # Destination for Linux
+  LIBRARY DESTINATION share/orthanc/plugins    # Destination for Linux
   )
 
 add_executable(UnitTests
