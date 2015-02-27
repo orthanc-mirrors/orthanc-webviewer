@@ -20,6 +20,9 @@ cmake_minimum_required(VERSION 2.8)
 
 project(OrthancPostgreSQL)
 
+set(ORTHANC_WEBVIEWER_VERSION "1.0")
+
+
 # Parameters of the build
 set(STATIC_BUILD OFF CACHE BOOL "Static build of the third-party libraries (necessary for Windows)")
 SET(STANDALONE_BUILD ON CACHE BOOL "Standalone build (all the resources are embedded, necessary for releases)")
@@ -179,11 +182,16 @@ endif()
 
 target_link_libraries(OrthancWebViewer ${GDCM_LIBRARIES} ${OS_LIBRARIES})
 
+message("Setting the version of the library to ${ORTHANC_WEBVIEWER_VERSION}")
+set_target_properties(OrthancWebViewer PROPERTIES 
+  VERSION ${ORTHANC_WEBVIEWER_VERSION} 
+  SOVERSION ${ORTHANC_WEBVIEWER_VERSION})
+
 install(
-    TARGETS OrthancWebViewer
-    RUNTIME DESTINATION lib    # Destination for Windows
-    LIBRARY DESTINATION lib    # Destination for Linux
-    )
+  TARGETS OrthancWebViewer
+  RUNTIME DESTINATION lib    # Destination for Windows
+  LIBRARY DESTINATION lib    # Destination for Linux
+  )
 
 add_executable(UnitTests
   ${CORE_SOURCES}
