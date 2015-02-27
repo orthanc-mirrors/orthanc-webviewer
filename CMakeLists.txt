@@ -182,7 +182,7 @@ target_link_libraries(OrthancWebViewer ${GDCM_LIBRARIES} ${OS_LIBRARIES})
 install(
     TARGETS OrthancWebViewer
     RUNTIME DESTINATION lib    # Destination for Windows
-    LIBRARY DESTINATION share/orthanc/plugins    # Destination for Linux
+    LIBRARY DESTINATION lib    # Destination for Linux
     )
 
 add_executable(UnitTests
