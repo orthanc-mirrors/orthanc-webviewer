@@ -183,6 +183,9 @@ endif()
 target_link_libraries(OrthancWebViewer ${GDCM_LIBRARIES} ${OS_LIBRARIES})
 
 message("Setting the version of the library to ${ORTHANC_WEBVIEWER_VERSION}")
+
+add_definitions(-DORTHANC_WEBVIEWER_VERSION="${ORTHANC_WEBVIEWER_VERSION}")
+
 set_target_properties(OrthancWebViewer PROPERTIES 
   VERSION ${ORTHANC_WEBVIEWER_VERSION} 
   SOVERSION ${ORTHANC_WEBVIEWER_VERSION})

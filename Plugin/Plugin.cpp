@@ -369,6 +369,6 @@ extern "C"
 
   ORTHANC_PLUGINS_API const char* OrthancPluginGetVersion()
   {
-    return "1.0";
+    return ORTHANC_WEBVIEWER_VERSION;
   }
 }
