@@ -193,10 +193,10 @@ TEST(JpegWriter, Basic)
 {
   Orthanc::ImageBuffer img(16, 16, Orthanc::PixelFormat_Grayscale8);
   Orthanc::ImageAccessor accessor = img.GetAccessor();
-  for (int y = 0, value = 0; y < img.GetHeight(); y++)
+  for (unsigned int y = 0, value = 0; y < img.GetHeight(); y++)
   {
     uint8_t* p = reinterpret_cast<uint8_t*>(accessor.GetRow(y));
-    for (int x = 0; x < img.GetWidth(); x++, p++)
+    for (unsigned int x = 0; x < img.GetWidth(); x++, p++)
     {
       *p = value++;
     }

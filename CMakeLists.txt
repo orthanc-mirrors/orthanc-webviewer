@@ -18,7 +18,7 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-project(OrthancPostgreSQL)
+project(OrthancWebViewer)
 
 set(ORTHANC_WEBVIEWER_VERSION "1.0")
 
@@ -64,6 +64,25 @@ if (CMAKE_COMPILER_IS_GNUCXX)
   SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--version-script=${CMAKE_SOURCE_DIR}/Resources/VersionScript.map -Wl,--no-undefined")
 endif()
 
+if (MSVC)
+  # Use static runtime under Visual Studio
+  # http://www.cmake.org/Wiki/CMake_FAQ#Dynamic_Replace
+  # http://stackoverflow.com/a/6510446
+  foreach(flag_var
+    CMAKE_C_FLAGS_DEBUG
+    CMAKE_CXX_FLAGS_DEBUG
+    CMAKE_C_FLAGS_RELEASE 
+    CMAKE_CXX_FLAGS_RELEASE
+    CMAKE_C_FLAGS_MINSIZEREL 
+    CMAKE_CXX_FLAGS_MINSIZEREL 
+    CMAKE_C_FLAGS_RELWITHDEBINFO 
+    CMAKE_CXX_FLAGS_RELWITHDEBINFO) 
+    string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+    string(REGEX REPLACE "/MDd" "/MTd" ${flag_var} "${${flag_var}}")
+  endforeach(flag_var)
+
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS=1)
+endif()
 
 include(CheckIncludeFiles)
 include(CheckIncludeFileCXX)

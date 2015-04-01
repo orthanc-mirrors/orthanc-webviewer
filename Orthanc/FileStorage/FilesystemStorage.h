@@ -34,6 +34,7 @@
 
 #include <boost/filesystem.hpp>
 #include <set>
+#include <stdint.h>
 
 namespace Orthanc
 {
