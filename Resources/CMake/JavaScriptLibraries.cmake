@@ -29,8 +29,8 @@ DownloadPackage(
   "jquery-ui-1.11.3")
 
 DownloadPackage(
-  "8f27231a78218b959159e37daa3d86b3"
-  "${BASE_URL}/jsPanel-2.3.3.zip"
+  "169c56338f9ff812cae3e91ef72bda2e"
+  "${BASE_URL}/jsPanel-2.3.3-fixed.zip"
   "jspanel")
 
 DownloadPackage(

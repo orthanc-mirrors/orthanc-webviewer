@@ -244,6 +244,9 @@ namespace OrthancPlugins
         case gdcm::PixelFormat::UINT8:
           accessor.AssignWritable(Orthanc::PixelFormat_Grayscale8, width, height, width, buffer);
           return true;
+
+      default:
+	return false;
       }
     }
     else if (image.GetPixelFormat().GetSamplesPerPixel() == 3 &&
@@ -254,6 +257,9 @@ namespace OrthancPlugins
         case gdcm::PixelFormat::UINT8:
           accessor.AssignWritable(Orthanc::PixelFormat_RGB24, width, height, 3 * width, buffer);
           return true;
+
+      default:
+	return false;
       }      
     }
 
