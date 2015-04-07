@@ -1,5 +1,5 @@
 $('#series').live('pagebeforecreate', function() {
-  $('#series-preview').parent().remove();
+  //$('#series-preview').parent().remove();
 
   var b = $('<a>')
     .attr('data-role', 'button')
