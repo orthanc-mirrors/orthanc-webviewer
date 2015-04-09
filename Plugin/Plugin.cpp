@@ -215,6 +215,53 @@ static int32_t ServeEmbeddedFolder(OrthancPluginRestOutput* output,
 
 
 
+static int32_t IsStableSeries(OrthancPluginRestOutput* output,
+                              const char* url,
+                              const OrthancPluginHttpRequest* request)
+{
+ try
+  {
+    if (request->method != OrthancPluginHttpMethod_Get)
+    {
+      OrthancPluginSendMethodNotAllowed(context_, output, "GET");
+      return 0;
+    }
+
+    const std::string id = request->groups[0];
+    Json::Value series;
+
+    if (OrthancPlugins::GetJsonFromOrthanc(series, context_, "/series/" + id) &&
+        series.type() == Json::objectValue)
+    {
+      bool value = (series["IsStable"].asBool() ||
+                    series["Status"].asString() == "Complete");
+      std::string answer = value ? "true" : "false";
+      OrthancPluginAnswerBuffer(context_, output, answer.c_str(), answer.size(), "application/json");
+    }
+    else
+    {
+      OrthancPluginSendHttpStatusCode(context_, output, 404);
+    }
+
+    return 0;
+  }
+  catch (Orthanc::OrthancException& e)
+  {
+    OrthancPluginLogError(context_, e.What());
+    return -1;
+  }
+  catch (std::runtime_error& e)
+  {
+    OrthancPluginLogError(context_, e.what());
+    return -1;
+  }
+  catch (boost::bad_lexical_cast&)
+  {
+    OrthancPluginLogError(context_, "Bad lexical cast");
+    return -1;
+  }
+}
+
 
 extern "C"
 {
@@ -328,6 +375,7 @@ extern "C"
 
     /* Install the callbacks */
     OrthancPluginRegisterRestCallback(context_, "/web-viewer/series/(.*)", ServeCache<CacheBundle_SeriesInformation>);
+    OrthancPluginRegisterRestCallback(context_, "/web-viewer/is-stable-series/(.*)", IsStableSeries);
     OrthancPluginRegisterRestCallback(context_, "/web-viewer/instances/(.*)", ServeCache<CacheBundle_DecodedImage>);
     OrthancPluginRegisterRestCallback(context, "/web-viewer/libs/(.*)", ServeEmbeddedFolder<EmbeddedResources::JAVASCRIPT_LIBS>);
 

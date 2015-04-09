@@ -385,13 +385,12 @@ $(document).ready(function() {
 
   $.ajax({
     type: 'GET',
-    url: '../../series/' + series,
+    url: '../is-stable-series/' + series,
     dataType: 'json',
     cache: false,
     async: true,
-    success: function(series) {
-      if (!series.IsStable && 
-          series.Status != 'Complete') {
+    success: function(stable) {
+      if (!stable) {
         $('#unstable').show();
       }
     }
