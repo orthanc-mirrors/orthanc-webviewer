@@ -130,9 +130,18 @@ namespace OrthancPlugins
           }
 
           std::string content;
-          if (!that->factory_.Create(content, prefetch->GetValue()))
+
+          try
           {
-            // The factory cannot generate this item
+            if (!that->factory_.Create(content, prefetch->GetValue()))
+            {
+              // The factory cannot generate this item
+              continue;
+            }
+          }
+          catch (...)
+          {
+            // Exception
             continue;
           }
 
