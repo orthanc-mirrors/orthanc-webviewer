@@ -21,7 +21,7 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_BOOST)
 else()
   include(FindBoost)
   set(BOOST_STATIC 0)
-  find_package(Boost COMPONENTS system thread filesystem)
+  find_package(Boost COMPONENTS system thread filesystem locale)
 
   if (NOT Boost_FOUND)
     message(FATAL_ERROR "Unable to locate Boost on this system")
@@ -68,6 +68,7 @@ if (BOOST_STATIC)
 
   list(APPEND BOOST_SOURCES
     ${BOOST_SOURCES_DIR}/libs/system/src/error_code.cpp
+    ${BOOST_SOURCES_DIR}/libs/locale/src/encoding/codepage.cpp
     )
 
 
@@ -121,4 +122,6 @@ endif()
 add_definitions(
   -DBOOST_HAS_FILESYSTEM_V3=1
   -DBOOST_HAS_LOCALE=1
+  -DBOOST_HAS_DATE_TIME=0
+  -DBOOST_HAS_REGEX=0
   )

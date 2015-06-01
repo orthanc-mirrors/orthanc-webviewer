@@ -37,23 +37,34 @@
 #include <stdint.h>
 #include <vector>
 #include <string>
+
+#if ORTHANC_PUGIXML_ENABLED == 1
 #include <json/json.h>
+#endif
 
 namespace Orthanc
 {
   typedef std::vector<std::string> UriComponents;
 
+  class NullType
+  {
+  };
+
   namespace Toolbox
   {
-    Endianness DetectEndianness();
+    void ServerBarrier(const bool& stopFlag);
 
-    void TokenizeString(std::vector<std::string>& result,
-                        const std::string& source,
-                        char separator);
+    void ServerBarrier();
 
-    void CreateNewDirectory(const std::string& path);
+    void ToUpperCase(std::string& s);  // Inplace version
 
-    bool IsExistingFile(const std::string& path);
+    void ToLowerCase(std::string& s);  // Inplace version
+
+    void ToUpperCase(std::string& result,
+                     const std::string& source);
+
+    void ToLowerCase(std::string& result,
+                     const std::string& source);
 
     void ReadFile(std::string& content,
                   const std::string& path);
@@ -65,6 +76,89 @@ namespace Orthanc
 
     void RemoveFile(const std::string& path);
 
+    void SplitUriComponents(UriComponents& components,
+                            const std::string& uri);
+  
+    void TruncateUri(UriComponents& target,
+                     const UriComponents& source,
+                     size_t fromLevel);
+  
+    bool IsChildUri(const UriComponents& baseUri,
+                    const UriComponents& testedUri);
+
+    std::string AutodetectMimeType(const std::string& path);
+
+    std::string FlattenUri(const UriComponents& components,
+                           size_t fromLevel = 0);
+
+    uint64_t GetFileSize(const std::string& path);
+
+    void ComputeMD5(std::string& result,
+                    const std::string& data);
+
+    void ComputeMD5(std::string& result,
+                    const void* data,
+                    size_t length);
+
+    void ComputeSHA1(std::string& result,
+                     const std::string& data);
+
+    bool IsSHA1(const std::string& str);
+
+    void DecodeBase64(std::string& result, 
+                      const std::string& data);
+
+    void EncodeBase64(std::string& result, 
+                      const std::string& data);
+
+    std::string GetPathToExecutable();
+
+    std::string GetDirectoryOfExecutable();
+
+    std::string ConvertToUtf8(const std::string& source,
+                              const Encoding sourceEncoding);
+
+    std::string ConvertToAscii(const std::string& source);
+
     std::string StripSpaces(const std::string& source);
+
+#if BOOST_HAS_DATE_TIME == 1
+    std::string GetNowIsoString();
+#endif
+
+    // In-place percent-decoding for URL
+    void UrlDecode(std::string& s);
+
+    Endianness DetectEndianness();
+
+#if BOOST_HAS_REGEX == 1
+    std::string WildcardToRegularExpression(const std::string& s);
+#endif
+
+    void TokenizeString(std::vector<std::string>& result,
+                        const std::string& source,
+                        char separator);
+
+#if BOOST_HAS_REGEX == 1
+    void DecodeDataUriScheme(std::string& mime,
+                             std::string& content,
+                             const std::string& source);
+#endif
+
+    void MakeDirectory(const std::string& path);
+
+    bool IsExistingFile(const std::string& path);
+
+#if ORTHANC_PUGIXML_ENABLED == 1
+    void JsonToXml(std::string& target,
+                   const Json::Value& source,
+                   const std::string& rootElement = "root",
+                   const std::string& arrayElement = "item");
+#endif
+
+    void ExecuteSystemCommand(const std::string& command,
+                              const std::vector<std::string>& arguments);
+
+    bool IsInteger(const std::string& str);
   }
 }

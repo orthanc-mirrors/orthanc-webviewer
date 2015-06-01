@@ -42,6 +42,10 @@
 
 #include <boost/filesystem/fstream.hpp>
 
+#if HAVE_GOOGLE_LOG == 1
+#include <glog/logging.h>
+#endif
+
 static std::string ToString(const boost::filesystem::path& p)
 {
 #if BOOST_HAS_FILESYSTEM_V3 == 1
@@ -81,12 +85,13 @@ namespace Orthanc
     //root_ = boost::filesystem::absolute(root).string();
     root_ = root;
 
-    Toolbox::CreateNewDirectory(root);
+    Toolbox::MakeDirectory(root);
   }
 
   void FilesystemStorage::Create(const std::string& uuid,
                                  const void* content, 
-                                 size_t size)
+                                 size_t size,
+                                 FileContentType /*type*/)
   {
     boost::filesystem::path path;
     
@@ -136,7 +141,8 @@ namespace Orthanc
 
 
   void FilesystemStorage::Read(std::string& content,
-                               const std::string& uuid)
+                               const std::string& uuid,
+                               FileContentType /*type*/)
   {
     content.clear();
     Toolbox::ReadFile(content, GetPath(uuid).string());
@@ -201,13 +207,18 @@ namespace Orthanc
 
     for (List::const_iterator it = result.begin(); it != result.end(); ++it)
     {
-      Remove(*it);
+      Remove(*it, FileContentType_Unknown /*ignored in this class*/);
     }
   }
 
 
-  void FilesystemStorage::Remove(const std::string& uuid)
+  void FilesystemStorage::Remove(const std::string& uuid,
+                                 FileContentType /*type*/)
   {
+#if HAVE_GOOGLE_LOG == 1
+    LOG(INFO) << "Deleting file " << uuid;
+#endif
+
     namespace fs = boost::filesystem;
 
     fs::path p = GetPath(uuid);

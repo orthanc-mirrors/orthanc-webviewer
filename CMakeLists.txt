@@ -132,6 +132,7 @@ set(CORE_SOURCES
   ${CMAKE_SOURCE_DIR}/Orthanc/Toolbox.cpp
   ${CMAKE_SOURCE_DIR}/Orthanc/Uuid.cpp
   ${CMAKE_SOURCE_DIR}/Resources/ThirdParty/base64/base64.cpp
+  ${CMAKE_SOURCE_DIR}/Resources/ThirdParty/md5/md5.c
 
   ${CMAKE_SOURCE_DIR}/Plugin/Cache/CacheManager.cpp
   ${CMAKE_SOURCE_DIR}/Plugin/Cache/CacheScheduler.cpp

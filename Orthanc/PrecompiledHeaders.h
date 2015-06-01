@@ -38,11 +38,20 @@
 
 #if ORTHANC_USE_PRECOMPILED_HEADERS == 1
 
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/locale.hpp>
+#include <boost/regex.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/shared_mutex.hpp>
+
+#include <glog/logging.h>
 #include <json/value.h>
+
+#if ORTHANC_PUGIXML_ENABLED == 1
+#include <pugixml.hpp>
+#endif
 
 #include "Enumerations.h"
 #include "OrthancException.h"

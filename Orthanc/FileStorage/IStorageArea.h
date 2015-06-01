@@ -32,47 +32,30 @@
 
 #pragma once
 
-#include "IStorageArea.h"
+#include "../Enumerations.h"
 
-#include <boost/filesystem.hpp>
-#include <set>
+#include <string>
+#include <boost/noncopyable.hpp>
 
 namespace Orthanc
 {
-  class FilesystemStorage : public IStorageArea
+  class IStorageArea : public boost::noncopyable
   {
-    // TODO REMOVE THIS
-    friend class FilesystemHttpSender;
-    friend class FileStorageAccessor;
-
-  private:
-    boost::filesystem::path root_;
-
-    boost::filesystem::path GetPath(const std::string& uuid) const;
-
   public:
-    FilesystemStorage(std::string root);
+    virtual ~IStorageArea()
+    {
+    }
 
     virtual void Create(const std::string& uuid,
-                        const void* content, 
+                        const void* content,
                         size_t size,
-                        FileContentType type);
+                        FileContentType type) = 0;
 
     virtual void Read(std::string& content,
                       const std::string& uuid,
-                      FileContentType type);
+                      FileContentType type) = 0;
 
     virtual void Remove(const std::string& uuid,
-                        FileContentType type);
-
-    void ListAllFiles(std::set<std::string>& result) const;
-
-    uintmax_t GetSize(const std::string& uuid) const;
-
-    void Clear();
-
-    uintmax_t GetCapacity() const;
-
-    uintmax_t GetAvailableSpace() const;
+                        FileContentType type) = 0;
   };
 }

@@ -226,7 +226,7 @@ namespace OrthancPlugins
     for (std::list<std::string>::const_iterator
            it = toRemove.begin(); it != toRemove.end(); it++)
     {
-      pimpl_->storage_.Remove(*it);
+      pimpl_->storage_.Remove(*it, Orthanc::FileContentType_Unknown);
     }
 
     pimpl_->bundles_[bundleIndex] = bundle;
@@ -339,7 +339,7 @@ namespace OrthancPlugins
     // Store the cached content on the disk
     const char* data = content.size() ? &content[0] : NULL;
     std::string uuid = Toolbox::GenerateUuid();
-    pimpl_->storage_.Create(uuid, data, content.size());
+    pimpl_->storage_.Create(uuid, data, content.size(), Orthanc::FileContentType_Unknown);
 
     bool ok = true;
 
@@ -378,7 +378,7 @@ namespace OrthancPlugins
     if (!ok)
     {
       // Error: Remove the stored file
-      pimpl_->storage_.Remove(uuid);
+      pimpl_->storage_.Remove(uuid, Orthanc::FileContentType_Unknown);
     }
     else
     {
@@ -389,7 +389,7 @@ namespace OrthancPlugins
       for (std::list<std::string>::const_iterator
              it = toRemove.begin(); it != toRemove.end(); it++)
       {
-        pimpl_->storage_.Remove(*it);
+        pimpl_->storage_.Remove(*it, Orthanc::FileContentType_Unknown);
       }
     }
 
@@ -466,7 +466,7 @@ namespace OrthancPlugins
     bool ok;
     try
     {
-      pimpl_->storage_.Read(content, uuid);
+      pimpl_->storage_.Read(content, uuid, Orthanc::FileContentType_Unknown);
       ok = (content.size() == size);
     }
     catch (std::runtime_error&)
@@ -512,7 +512,7 @@ namespace OrthancPlugins
       {
         transaction->Commit();
         pimpl_->bundles_[bundleIndex] = bundle;
-        pimpl_->storage_.Remove(uuid);
+        pimpl_->storage_.Remove(uuid, Orthanc::FileContentType_Unknown);
       }
     }
   }
@@ -558,7 +558,7 @@ namespace OrthancPlugins
     SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "SELECT fileUuid FROM Cache");
     while (s.Step())
     {
-      pimpl_->storage_.Remove(s.ColumnString(0));    
+      pimpl_->storage_.Remove(s.ColumnString(0), Orthanc::FileContentType_Unknown);
     }  
 
     SQLite::Statement t(pimpl_->db_, SQLITE_FROM_HERE, "DELETE FROM Cache");
@@ -579,7 +579,7 @@ namespace OrthancPlugins
     s.BindInt(0, bundle);
     while (s.Step())
     {
-      pimpl_->storage_.Remove(s.ColumnString(0));
+      pimpl_->storage_.Remove(s.ColumnString(0), Orthanc::FileContentType_Unknown);
     }  
 
     SQLite::Statement t(pimpl_->db_, SQLITE_FROM_HERE, "DELETE FROM Cache WHERE bundle=?");

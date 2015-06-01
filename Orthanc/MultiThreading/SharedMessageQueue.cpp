@@ -61,7 +61,6 @@
  **/
 
 
-
 namespace Orthanc
 {
   SharedMessageQueue::SharedMessageQueue(unsigned int maxSize) :

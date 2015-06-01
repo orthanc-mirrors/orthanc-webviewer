@@ -34,6 +34,8 @@
 
 #include "../Enumerations.h"
 
+#include <string>
+
 namespace Orthanc
 {
   class ImageAccessor
@@ -111,5 +113,7 @@ namespace Orthanc
                         unsigned int height,
                         unsigned int pitch,
                         void *buffer);
+
+    void ToMatlabString(std::string& target) const; 
   };
 }
