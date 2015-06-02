@@ -73,6 +73,7 @@ FILES = [
     'Resources/ThirdParty/minizip/ioapi.h',
     'Resources/ThirdParty/minizip/zip.c',
     'Resources/ThirdParty/minizip/zip.h',
+    'Resources/ThirdParty/VisualStudio/stdint.h',
 ]
 
 for f in FILES:
