@@ -28,8 +28,8 @@
 namespace OrthancPlugins
 {
   SeriesVolumeSorter::SeriesVolumeSorter() : 
-    isVolume_(true), 
-    sorted_(true)
+    sorted_(true),
+    isVolume_(true)
   {
   }
 

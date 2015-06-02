@@ -20,8 +20,8 @@
 
 #pragma once
 
-#include "../../Orthanc/SQLite/Connection.h"
-#include "../../Orthanc/FileStorage/FilesystemStorage.h"
+#include "../../Orthanc/Core/SQLite/Connection.h"
+#include "../../Orthanc/Core/FileStorage/FilesystemStorage.h"
 
 namespace OrthancPlugins
 {

@@ -20,8 +20,8 @@
 
 #include "ViewerToolbox.h"
 
-#include "../Orthanc/OrthancException.h"
-#include "../Orthanc/Toolbox.h"
+#include "../Orthanc/Core/OrthancException.h"
+#include "../Orthanc/Core/Toolbox.h"
 
 #include <json/reader.h>
 #include <zlib.h>

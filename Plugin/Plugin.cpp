@@ -23,7 +23,7 @@
 #include <EmbeddedResources.h>
 #include <boost/filesystem.hpp>
 
-#include "../Orthanc/OrthancException.h"
+#include "../Orthanc/Core/OrthancException.h"
 #include "ViewerToolbox.h"
 #include "ViewerPrefetchPolicy.h"
 #include "DecodedImageAdapter.h"

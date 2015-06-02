@@ -23,7 +23,7 @@
 #include "ViewerToolbox.h"
 #include "SeriesVolumeSorter.h"
 
-#include "../Orthanc/OrthancException.h"
+#include "../Orthanc/Core/OrthancException.h"
 
 namespace OrthancPlugins
 {

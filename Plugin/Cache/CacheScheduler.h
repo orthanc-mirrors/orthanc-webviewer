@@ -23,7 +23,7 @@
 #include "CacheManager.h"
 #include "ICacheFactory.h"
 #include "IPrefetchPolicy.h"
-#include "../../Orthanc/MultiThreading/SharedMessageQueue.h"
+#include "../../Orthanc/Core/MultiThreading/SharedMessageQueue.h"
 
 #include <boost/thread.hpp>
 #include <stdio.h>

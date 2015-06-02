@@ -24,10 +24,10 @@
 static int argc_;
 static char** argv_;
 
-#include "../Orthanc/OrthancException.h"
-#include "../Orthanc/Toolbox.h"
-#include "../Orthanc/ImageFormats/ImageBuffer.h"
-#include "../Orthanc/ImageFormats/PngWriter.h"
+#include "../Orthanc/Core/OrthancException.h"
+#include "../Orthanc/Core/Toolbox.h"
+#include "../Orthanc/Core/ImageFormats/ImageBuffer.h"
+#include "../Orthanc/Core/ImageFormats/PngWriter.h"
 #include "../Plugin/Cache/CacheManager.h"
 #include "../Plugin/Cache/CacheScheduler.h"
 #include "../Plugin/Cache/ICacheFactory.h"

@@ -20,7 +20,7 @@
 
 #include "InstanceInformation.h"
 
-#include "../Orthanc/OrthancException.h"
+#include "../Orthanc/Core/OrthancException.h"
 
 #include <cassert>
 #include <string.h>

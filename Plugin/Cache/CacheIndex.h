@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "../../Orthanc/IDynamicObject.h"
+#include "../../Orthanc/Core/IDynamicObject.h"
 
 #include <string>
 

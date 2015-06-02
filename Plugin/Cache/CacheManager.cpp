@@ -20,8 +20,8 @@
 
 #include "CacheManager.h"
 
-#include "../../Orthanc/Uuid.h"
-#include "../../Orthanc/SQLite/Transaction.h"
+#include "../../Orthanc/Core/Uuid.h"
+#include "../../Orthanc/Core/SQLite/Transaction.h"
 
 #include <boost/lexical_cast.hpp>
 

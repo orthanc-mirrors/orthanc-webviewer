@@ -20,10 +20,10 @@
 
 #include "ParsedDicomImage.h"
 
-#include "../Orthanc/OrthancException.h"
-#include "../Orthanc/Toolbox.h"
-#include "../Orthanc/ImageFormats/ImageProcessing.h"
-#include "../Orthanc/ImageFormats/ImageBuffer.h"
+#include "../Orthanc/Core/OrthancException.h"
+#include "../Orthanc/Core/Toolbox.h"
+#include "../Orthanc/Core/ImageFormats/ImageProcessing.h"
+#include "../Orthanc/Core/ImageFormats/ImageBuffer.h"
 #include "JpegWriter.h"
 #include "ViewerToolbox.h"
 
@@ -33,7 +33,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/math/special_functions/round.hpp>
 
-#include "../Resources/ThirdParty/base64/base64.h"
+#include "../Orthanc/Resources/ThirdParty/base64/base64.h"
 
 
 namespace OrthancPlugins
@@ -480,4 +480,4 @@ namespace OrthancPlugins
     result["Orthanc"]["PixelData"] = base64_encode(jpeg);  
     return true;
   }
-};
+}
