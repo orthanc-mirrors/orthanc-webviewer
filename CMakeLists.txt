@@ -117,11 +117,11 @@ endif()
 
 set(CORE_SOURCES
   ${BOOST_SOURCES}
-  ${THIRD_PARTY_SOURCES}
   ${SQLITE_SOURCES}
   ${LIBJPEG_SOURCES}
   ${ZLIB_SOURCES}
   ${LIBPNG_SOURCES}
+  ${JSONCPP_SOURCES}
 
   # Sources inherited from Orthanc core
   ${CMAKE_SOURCE_DIR}/Orthanc/Core/ChunkedBuffer.cpp
