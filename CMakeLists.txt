@@ -190,5 +190,6 @@ install(
 add_executable(UnitTests
   ${CORE_SOURCES}
   ${GTEST_SOURCES}
+  ${JSONCPP_SOURCES}
   UnitTestsSources/UnitTestsMain.cpp
   )
