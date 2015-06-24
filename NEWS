@@ -3,6 +3,7 @@ Pending changes in the mainline
 
 * Support of Visual Studio 2008
 * Support of FreeBSD
+* Fix issue 29 (support of photometric interpretation YBR_FULL_422)
 
 
 Version 1.0 (2015-02-27)
