@@ -22,6 +22,7 @@
 
 #include "../Orthanc/Core/ImageFormats/ImageAccessor.h"
 
+#include <orthanc/OrthancCPlugin.h>
 #include <stdint.h>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
@@ -32,20 +33,17 @@ namespace OrthancPlugins
   class ParsedDicomImage : public boost::noncopyable
   {
   private:
-    struct PImpl;
+    class PImpl;
     boost::shared_ptr<PImpl> pimpl_;
   
-    void Setup(const std::string& dicom);
-
   public:
-    ParsedDicomImage(const std::string& dicom);
+    ParsedDicomImage(OrthancPluginContext* context,
+                     const std::string& instanceId);
 
     bool GetTag(std::string& result,
                 uint16_t group,
                 uint16_t element,
                 bool stripSpaces = true);
-
-    bool GetAccessor(Orthanc::ImageAccessor& accessor);
 
     bool GetCornerstoneMetadata(Json::Value& json);
 

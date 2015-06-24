@@ -24,6 +24,7 @@
 #include "../Orthanc/Core/Toolbox.h"
 #include "../Orthanc/Core/ImageFormats/ImageProcessing.h"
 #include "../Orthanc/Core/ImageFormats/ImageBuffer.h"
+#include "../Orthanc/Core/ImageFormats/PngReader.h"
 #include "JpegWriter.h"
 #include "ViewerToolbox.h"
 
@@ -38,12 +39,176 @@
 
 namespace OrthancPlugins
 {
-  struct ParsedDicomImage::PImpl
+  class ParsedDicomImage::PImpl
   {
+  private:
+    OrthancPluginContext* context_;
+    std::string instanceId_;
     gdcm::ImageReader reader_;
     std::auto_ptr<gdcm::ImageChangePhotometricInterpretation> photometric_;
     std::auto_ptr<gdcm::ImageChangePlanarConfiguration> interleaved_;
     std::string decoded_;
+    Orthanc::PngReader png_;
+    bool insidePng_;
+    bool isDecoded_;
+
+    bool DecodeUsingGdcm()
+    {
+      // Change photometric interpretation, if required
+      {
+        const gdcm::Image& image = GetImage();
+        if (image.GetPixelFormat().GetSamplesPerPixel() == 1)
+        {
+          if (image.GetPhotometricInterpretation() != gdcm::PhotometricInterpretation::MONOCHROME1 &&
+              image.GetPhotometricInterpretation() != gdcm::PhotometricInterpretation::MONOCHROME2)
+          {
+            photometric_.reset(new gdcm::ImageChangePhotometricInterpretation());
+            photometric_->SetInput(image);
+            photometric_->SetPhotometricInterpretation(gdcm::PhotometricInterpretation::MONOCHROME2);
+            if (!photometric_->Change() ||
+                GetImage().GetPhotometricInterpretation() != gdcm::PhotometricInterpretation::MONOCHROME2)
+            {
+              OrthancPluginLogWarning(context_, "GDCM cannot change the photometric interpretation");
+              return false;
+            }
+          }      
+        }
+        else 
+        {
+          if (image.GetPixelFormat().GetSamplesPerPixel() == 3 &&
+              image.GetPhotometricInterpretation() != gdcm::PhotometricInterpretation::RGB)
+          {
+            photometric_.reset(new gdcm::ImageChangePhotometricInterpretation());
+            photometric_->SetInput(image);
+            photometric_->SetPhotometricInterpretation(gdcm::PhotometricInterpretation::RGB);
+            if (!photometric_->Change() ||
+                GetImage().GetPhotometricInterpretation() != gdcm::PhotometricInterpretation::RGB)
+            {
+              OrthancPluginLogWarning(context_, "GDCM cannot change the photometric interpretation");
+              return false;
+            }
+          }
+        }
+      }
+
+      // Possibly convert planar configuration to interleaved
+      {
+        const gdcm::Image& image = GetImage();
+        if (image.GetPlanarConfiguration() != 0 && 
+            image.GetPixelFormat().GetSamplesPerPixel() != 1)
+        {
+          interleaved_.reset(new gdcm::ImageChangePlanarConfiguration());
+          interleaved_->SetInput(image);
+          if (!interleaved_->Change() ||
+              GetImage().GetPlanarConfiguration() != 0)
+          {
+            OrthancPluginLogWarning(context_, "GDCM cannot change the planar configuration to interleaved");
+            return false;
+          }
+        }
+      }
+
+      // Decode the image to the memory buffer
+      {
+        const gdcm::Image& image = GetImage();
+        decoded_.resize(image.GetBufferLength());
+      
+        if (decoded_.size() > 0)
+        {
+          image.GetBuffer(&decoded_[0]);
+        }
+      }
+
+      return true;
+    }
+
+
+    bool DecodeUsingOrthanc()
+    {
+      /**
+       * This is a DICOM image that cannot be properly decoded by
+       * GDCM. Let's give a try with the Orthanc built-in decoder.
+       **/
+      std::string file = "/instances/" + instanceId_;
+
+      const gdcm::Image& image = GetImage();
+      if (image.GetPixelFormat().GetSamplesPerPixel() == 3 ||
+          image.GetPixelFormat().GetSamplesPerPixel() == 4)
+      {
+        file += "/preview";
+      }
+      else
+      {
+        file += "/image-uint16";
+      }
+
+      std::string png;
+      if (!GetStringFromOrthanc(png, context_, file))
+      {
+        return false;
+      }
+      else
+      {
+        try
+        {
+          png_.ReadFromMemory(png);
+          insidePng_ = true;
+          return true;
+        }
+        catch (Orthanc::OrthancException&)
+        {
+          return false;
+        }
+      }
+    }
+
+
+    bool Decode()
+    {
+      if (isDecoded_)
+      {
+        return true;
+      }
+
+      if (DecodeUsingGdcm())
+      {
+        isDecoded_ = true;
+        return true;
+      }
+
+      // GDCM cannot decode this image, try and use Orthanc built-in functions
+      photometric_.reset();
+      interleaved_.reset();
+      decoded_.clear();
+
+      if (DecodeUsingOrthanc())
+      {
+        isDecoded_ = true;
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    }
+
+
+  public:
+    PImpl(OrthancPluginContext* context,
+          const std::string& instanceId) : 
+      context_(context),
+      instanceId_(instanceId),
+      insidePng_(false),
+      isDecoded_(false)
+    {
+    }
+
+
+    const gdcm::DataSet& GetDataSet() const
+    {
+      return reader_.GetFile().GetDataSet();
+    }
+
 
     const gdcm::Image& GetImage() const
     {
@@ -61,9 +226,78 @@ namespace OrthancPlugins
     }
 
 
-    const gdcm::DataSet& GetDataSet() const
+    void Parse(const std::string& dicom)
     {
-      return reader_.GetFile().GetDataSet();
+      // Prepare a memory stream over the DICOM instance
+      std::stringstream stream(dicom);
+
+      // Parse the DICOM instance using GDCM
+      reader_.SetStream(stream);
+      if (!reader_.Read())
+      {
+        throw Orthanc::OrthancException("GDCM cannot extract an image from this DICOM instance");
+      }
+    }
+
+
+    bool GetAccessor(Orthanc::ImageAccessor& accessor)
+    {
+      if (!Decode())
+      {
+        return false;
+      }
+
+      if (insidePng_)
+      {
+        // The image was decoded using Orthanc's built-in REST API
+        accessor = png_;
+        return true;
+      }
+
+      const gdcm::Image& image = GetImage();
+
+      size_t size = decoded_.size();
+      void* buffer = (size ? &decoded_[0] : NULL);    
+      unsigned int height = image.GetRows();
+      unsigned int width = image.GetColumns();
+
+      if (image.GetPixelFormat().GetSamplesPerPixel() == 1 &&
+          (image.GetPhotometricInterpretation() == gdcm::PhotometricInterpretation::MONOCHROME1 ||
+           image.GetPhotometricInterpretation() == gdcm::PhotometricInterpretation::MONOCHROME2))
+      {
+        switch (image.GetPixelFormat())
+        {
+          case gdcm::PixelFormat::UINT16:
+            accessor.AssignWritable(Orthanc::PixelFormat_Grayscale16, width, height, 2 * width, buffer);
+            return true;
+
+          case gdcm::PixelFormat::INT16:
+            accessor.AssignWritable(Orthanc::PixelFormat_SignedGrayscale16, width, height, 2 * width, buffer);
+            return true;
+
+          case gdcm::PixelFormat::UINT8:
+            accessor.AssignWritable(Orthanc::PixelFormat_Grayscale8, width, height, width, buffer);
+            return true;
+
+          default:
+            return false;
+        }
+      }
+      else if (image.GetPixelFormat().GetSamplesPerPixel() == 3 &&
+               image.GetPhotometricInterpretation() == gdcm::PhotometricInterpretation::RGB)
+      {
+        switch (image.GetPixelFormat())
+        {
+          case gdcm::PixelFormat::UINT8:
+            accessor.AssignWritable(Orthanc::PixelFormat_RGB24, width, height, 3 * width, buffer);
+            return true;
+
+          default:
+            return false;
+        }      
+      }
+
+      return false;
     }
   };
 
@@ -112,82 +346,19 @@ namespace OrthancPlugins
   }
 
 
-  void ParsedDicomImage::Setup(const std::string& dicom)
+  ParsedDicomImage::ParsedDicomImage(OrthancPluginContext* context,
+                                     const std::string& instanceId) : 
+    pimpl_(new PImpl(context, instanceId))
   {
-    // Prepare a memory stream over the DICOM instance
-    std::stringstream stream(dicom);
+    std::string file = "/instances/" + instanceId + "/file";
 
-    // Parse the DICOM instance using GDCM
-    pimpl_->reader_.SetStream(stream);
-    if (!pimpl_->reader_.Read())
+    std::string dicom;
+    if (!GetStringFromOrthanc(dicom, context, file))
     {
-      throw Orthanc::OrthancException("GDCM cannot extract an image from this DICOM instance");
+      throw Orthanc::OrthancException(Orthanc::ErrorCode_UnknownResource);
     }
 
-    // Change photometric interpretation, if required
-    {
-      const gdcm::Image& image = pimpl_->GetImage();
-      if (image.GetPixelFormat().GetSamplesPerPixel() == 1)
-      {
-        if (image.GetPhotometricInterpretation() != gdcm::PhotometricInterpretation::MONOCHROME1 &&
-            image.GetPhotometricInterpretation() != gdcm::PhotometricInterpretation::MONOCHROME2)
-        {
-          pimpl_->photometric_.reset(new gdcm::ImageChangePhotometricInterpretation());
-          pimpl_->photometric_->SetInput(image);
-          pimpl_->photometric_->SetPhotometricInterpretation(gdcm::PhotometricInterpretation::MONOCHROME2);
-          if (!pimpl_->photometric_->Change())
-          {
-            throw Orthanc::OrthancException("GDCM cannot change the photometric interpretation");
-          }
-        }      
-      }
-      else 
-      {
-        if (image.GetPixelFormat().GetSamplesPerPixel() == 3 &&
-            image.GetPhotometricInterpretation() != gdcm::PhotometricInterpretation::RGB)
-        {
-          pimpl_->photometric_.reset(new gdcm::ImageChangePhotometricInterpretation());
-          pimpl_->photometric_->SetInput(image);
-          pimpl_->photometric_->SetPhotometricInterpretation(gdcm::PhotometricInterpretation::RGB);
-          if (!pimpl_->photometric_->Change())
-          {
-            throw Orthanc::OrthancException("GDCM cannot change the photometric interpretation");
-          }
-        }
-      }
-    }
-
-    // Possibly convert planar configuration to interleaved
-    {
-      const gdcm::Image& image = pimpl_->GetImage();
-      if (image.GetPlanarConfiguration() != 0 && 
-          image.GetPixelFormat().GetSamplesPerPixel() != 1)
-      {
-        pimpl_->interleaved_.reset(new gdcm::ImageChangePlanarConfiguration());
-        pimpl_->interleaved_->SetInput(image);
-        if (!pimpl_->interleaved_->Change())
-        {
-          throw Orthanc::OrthancException("GDCM cannot change the planar configuration to interleaved");
-        }
-      }
-    }
-
-    // Decode the image to the memory buffer
-    {
-      const gdcm::Image& image = pimpl_->GetImage();
-      pimpl_->decoded_.resize(image.GetBufferLength());
-      
-      if (pimpl_->decoded_.size() > 0)
-      {
-        image.GetBuffer(&pimpl_->decoded_[0]);
-      }
-    }
-  }
-
-
-  ParsedDicomImage::ParsedDicomImage(const std::string& dicom) : pimpl_(new PImpl)
-  {
-    Setup(dicom);
+    pimpl_->Parse(dicom);
   }
 
 
@@ -218,60 +389,12 @@ namespace OrthancPlugins
   }
 
 
-  bool ParsedDicomImage::GetAccessor(Orthanc::ImageAccessor& accessor)
-  {
-    const gdcm::Image& image = pimpl_->GetImage();
-
-    size_t size = pimpl_->decoded_.size();
-    void* buffer = (size ? &pimpl_->decoded_[0] : NULL);    
-    unsigned int height = image.GetRows();
-    unsigned int width = image.GetColumns();
-
-    if (image.GetPixelFormat().GetSamplesPerPixel() == 1 &&
-        (image.GetPhotometricInterpretation() == gdcm::PhotometricInterpretation::MONOCHROME1 ||
-         image.GetPhotometricInterpretation() == gdcm::PhotometricInterpretation::MONOCHROME2))
-    {
-      switch (image.GetPixelFormat())
-      {
-        case gdcm::PixelFormat::UINT16:
-          accessor.AssignWritable(Orthanc::PixelFormat_Grayscale16, width, height, 2 * width, buffer);
-          return true;
-
-        case gdcm::PixelFormat::INT16:
-          accessor.AssignWritable(Orthanc::PixelFormat_SignedGrayscale16, width, height, 2 * width, buffer);
-          return true;
-
-        case gdcm::PixelFormat::UINT8:
-          accessor.AssignWritable(Orthanc::PixelFormat_Grayscale8, width, height, width, buffer);
-          return true;
-
-      default:
-	return false;
-      }
-    }
-    else if (image.GetPixelFormat().GetSamplesPerPixel() == 3 &&
-             image.GetPhotometricInterpretation() == gdcm::PhotometricInterpretation::RGB)
-    {
-      switch (image.GetPixelFormat())
-      {
-        case gdcm::PixelFormat::UINT8:
-          accessor.AssignWritable(Orthanc::PixelFormat_RGB24, width, height, 3 * width, buffer);
-          return true;
-
-      default:
-	return false;
-      }      
-    }
-
-    return false;
-  }
-
   bool ParsedDicomImage::GetCornerstoneMetadata(Json::Value& json)
   {
     using namespace Orthanc;
 
     ImageAccessor accessor;
-    if (!GetAccessor(accessor))
+    if (!pimpl_->GetAccessor(accessor))
     {
       return false;
     }
@@ -355,7 +478,7 @@ namespace OrthancPlugins
     using namespace Orthanc;
 
     ImageAccessor accessor;
-    if (!GetAccessor(accessor))
+    if (!pimpl_->GetAccessor(accessor))
     {
       return false;
     }
@@ -422,7 +545,7 @@ namespace OrthancPlugins
     using namespace Orthanc;
 
     ImageAccessor accessor;
-    if (!GetAccessor(accessor))
+    if (!pimpl_->GetAccessor(accessor))
     {
       return false;
     }

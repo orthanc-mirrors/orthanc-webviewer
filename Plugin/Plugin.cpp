@@ -180,7 +180,7 @@ static int32_t ServeWebViewer(OrthancPluginRestOutput* output,
 
 
 
-template <enum OrthancPlugins::EmbeddedResources::DirectoryResourceId folder>
+template <enum Orthanc::EmbeddedResources::DirectoryResourceId folder>
 static int32_t ServeEmbeddedFolder(OrthancPluginRestOutput* output,
                                    const char* url,
                                    const OrthancPluginHttpRequest* request)
@@ -197,7 +197,7 @@ static int32_t ServeEmbeddedFolder(OrthancPluginRestOutput* output,
   try
   {
     std::string s;
-    OrthancPlugins::EmbeddedResources::GetDirectoryResource(s, folder, path.c_str());
+    Orthanc::EmbeddedResources::GetDirectoryResource(s, folder, path.c_str());
 
     const char* resource = s.size() ? s.c_str() : NULL;
     OrthancPluginAnswerBuffer(context_, output, resource, s.size(), mime);
@@ -377,10 +377,10 @@ extern "C"
     OrthancPluginRegisterRestCallback(context_, "/web-viewer/series/(.*)", ServeCache<CacheBundle_SeriesInformation>);
     OrthancPluginRegisterRestCallback(context_, "/web-viewer/is-stable-series/(.*)", IsStableSeries);
     OrthancPluginRegisterRestCallback(context_, "/web-viewer/instances/(.*)", ServeCache<CacheBundle_DecodedImage>);
-    OrthancPluginRegisterRestCallback(context, "/web-viewer/libs/(.*)", ServeEmbeddedFolder<EmbeddedResources::JAVASCRIPT_LIBS>);
+    OrthancPluginRegisterRestCallback(context, "/web-viewer/libs/(.*)", ServeEmbeddedFolder<Orthanc::EmbeddedResources::JAVASCRIPT_LIBS>);
 
 #if ORTHANC_STANDALONE == 1
-    OrthancPluginRegisterRestCallback(context, "/web-viewer/app/(.*)", ServeEmbeddedFolder<EmbeddedResources::WEB_VIEWER>);
+    OrthancPluginRegisterRestCallback(context, "/web-viewer/app/(.*)", ServeEmbeddedFolder<Orthanc::EmbeddedResources::WEB_VIEWER>);
 #else
     OrthancPluginRegisterRestCallback(context, "/web-viewer/app/(.*)", ServeWebViewer);
 #endif
@@ -390,7 +390,7 @@ extern "C"
 
     /* Extend the default Orthanc Explorer with custom JavaScript */
     std::string explorer;
-    EmbeddedResources::GetFileResource(explorer, EmbeddedResources::ORTHANC_EXPLORER);
+    Orthanc::EmbeddedResources::GetFileResource(explorer, Orthanc::EmbeddedResources::ORTHANC_EXPLORER);
     OrthancPluginExtendOrthancExplorer(context_, explorer.c_str());
 
     return 0;

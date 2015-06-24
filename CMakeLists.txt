@@ -130,6 +130,7 @@ set(CORE_SOURCES
   ${CMAKE_SOURCE_DIR}/Orthanc/Core/ImageFormats/ImageAccessor.cpp
   ${CMAKE_SOURCE_DIR}/Orthanc/Core/ImageFormats/ImageBuffer.cpp
   ${CMAKE_SOURCE_DIR}/Orthanc/Core/ImageFormats/ImageProcessing.cpp
+  ${CMAKE_SOURCE_DIR}/Orthanc/Core/ImageFormats/PngReader.cpp
   ${CMAKE_SOURCE_DIR}/Orthanc/Core/ImageFormats/PngWriter.cpp
   ${CMAKE_SOURCE_DIR}/Orthanc/Core/MultiThreading/SharedMessageQueue.cpp
   ${CMAKE_SOURCE_DIR}/Orthanc/Core/OrthancException.cpp

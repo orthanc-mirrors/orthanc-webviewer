@@ -84,39 +84,32 @@ namespace OrthancPlugins
       return false;
     }
 
-    std::string file = "/instances/" + instanceId + "/file";
-
-    std::string dicom;
-    if (!GetStringFromOrthanc(dicom, context_, file))
-    {
-      return false;
-    }
-
-    ParsedDicomImage image(dicom);
+    ParsedDicomImage image(context_, instanceId);
 
     Json::Value json;
+    bool ok = false;
 
     if (type == CompressionType_Deflate)
     {
-      if (!image.EncodeUsingDeflate(json, 9))
-      {
-        return false;
-      }
+      ok = image.EncodeUsingDeflate(json, 9);
     }
     else if (type == CompressionType_Jpeg)
     {
-      if (!image.EncodeUsingJpeg(json, level))
-      {
-        return false;
-      }
+      ok = image.EncodeUsingJpeg(json, level);
+    }
+
+    if (ok)
+    {
+      Json::FastWriter writer;
+      content = writer.write(json);
+      return true;
     }
     else
     {
+      char msg[1024];
+      sprintf(msg, "Unable to decode the following instance: %s", uri.c_str());
+      OrthancPluginLogWarning(context_, msg);
       return false;
     }
-
-    Json::FastWriter writer;
-    content = writer.write(json);
-    return true;
   }
 }
