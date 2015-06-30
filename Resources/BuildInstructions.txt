@@ -25,5 +25,5 @@ Cross-compiling for Windows from Linux using MinGW
 
 # mkdir Build
 # cd Build
-# cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=../Resources/MinGWToolchain.cmake
+# cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=../Orthanc/Resources/MinGWToolchain.cmake
 # make

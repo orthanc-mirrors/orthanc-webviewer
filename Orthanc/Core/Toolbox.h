@@ -37,10 +37,7 @@
 #include <stdint.h>
 #include <vector>
 #include <string>
-
-#if ORTHANC_PUGIXML_ENABLED == 1
 #include <json/json.h>
-#endif
 
 namespace Orthanc
 {
@@ -160,5 +157,11 @@ namespace Orthanc
                               const std::vector<std::string>& arguments);
 
     bool IsInteger(const std::string& str);
+
+    void CopyJsonWithoutComments(Json::Value& target,
+                                 const Json::Value& source);
+
+    bool StartsWith(const std::string& str,
+                    const std::string& prefix);
   }
 }
