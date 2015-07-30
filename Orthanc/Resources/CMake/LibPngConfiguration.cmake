@@ -41,6 +41,7 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_LIBPNG)
   add_definitions(
     -DPNG_NO_CONSOLE_IO=1
     -DPNG_NO_STDIO=1
+    -DPNG_IMPEXP=1   # ATTEMPT
     )
 
   source_group(ThirdParty\\Libpng REGULAR_EXPRESSION ${LIBPNG_SOURCES_DIR}/.*)
