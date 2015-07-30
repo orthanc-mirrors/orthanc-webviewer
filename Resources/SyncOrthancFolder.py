@@ -7,9 +7,13 @@
 
 import os
 import shutil
+import urllib2
+
+PLUGIN_SDK_VERSION = '0.9.1'
 
 SOURCE = '/home/jodogne/Subversion/Orthanc'
 TARGET = os.path.join(os.path.dirname(__file__), '..', 'Orthanc')
+REPOSITORY = 'https://bitbucket.org/sjodogne/orthanc/raw/Orthanc-%s/Plugins/Include' % PLUGIN_SDK_VERSION
 
 FILES = [
     'Core/ChunkedBuffer.cpp',
@@ -85,6 +89,10 @@ FILES = [
     'Resources/WindowsResources.rc',
 ]
 
+SDK = [
+    'orthanc/OrthancCPlugin.h',
+]   
+
 for f in FILES:
     source = os.path.join(SOURCE, f)
     target = os.path.join(TARGET, f)
@@ -94,3 +102,14 @@ for f in FILES:
         pass
 
     shutil.copy(source, target)
+
+for f in SDK:
+    source = '%s/%s' % (REPOSITORY, f)
+    target = os.path.join(TARGET, 'Sdk-%s' % PLUGIN_SDK_VERSION, f)
+    try:
+        os.makedirs(os.path.dirname(target))
+    except:
+        pass
+
+    with open(target, 'w') as g:
+        g.write(urllib2.urlopen(source).read())
