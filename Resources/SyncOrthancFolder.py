@@ -80,6 +80,8 @@ FILES = [
     'Resources/ThirdParty/minizip/zip.c',
     'Resources/ThirdParty/minizip/zip.h',
     'Resources/ThirdParty/VisualStudio/stdint.h',
+    'Resources/WindowsResources.py',
+    'Resources/WindowsResources.rc',
 ]
 
 for f in FILES:
