@@ -56,6 +56,7 @@ FILES = [
     'Core/Toolbox.h',
     'Core/Uuid.cpp',
     'Core/Uuid.h',
+    'Plugins/Samples/Common/VersionScript.map',
     'Resources/EmbedResources.py',
     'Resources/MinGWToolchain.cmake',
     'Resources/MinGW-W64-Toolchain32.cmake',

@@ -130,7 +130,7 @@ elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 endif()
 
 if (CMAKE_COMPILER_IS_GNUCXX)
-  SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--version-script=${CMAKE_SOURCE_DIR}/Resources/VersionScript.map -Wl,--no-undefined")
+  SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--version-script=${CMAKE_SOURCE_DIR}/Orthanc/Plugins/Samples/Common/VersionScript.map -Wl,--no-undefined")
 endif()
 
 
