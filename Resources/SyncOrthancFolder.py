@@ -74,7 +74,6 @@ FILES = [
     'Resources/CMake/LibPngConfiguration.cmake',
     'Resources/CMake/SQLiteConfiguration.cmake',
     'Resources/CMake/ZlibConfiguration.cmake',
-    'Resources/Patches/boost-1.55.0-clang-atomic.patch',
     'Resources/ThirdParty/base64/base64.cpp',
     'Resources/ThirdParty/base64/base64.h',
     'Resources/ThirdParty/md5/md5.c',

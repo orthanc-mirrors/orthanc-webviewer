@@ -1,6 +1,7 @@
 Pending changes in the mainline
 ===============================
 
+* Update to Boost 1.58.0 for static and Windows builds
 * Inject version information into Windows binaries
 
 
