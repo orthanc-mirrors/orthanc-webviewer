@@ -35,24 +35,28 @@
 class CacheContext
 {
 private:
-  std::auto_ptr<Orthanc::FilesystemStorage>  storage_;
-  std::auto_ptr<Orthanc::SQLite::Connection>  db_;
+  Orthanc::FilesystemStorage  storage_;
+  Orthanc::SQLite::Connection  db_;
+
   std::auto_ptr<OrthancPlugins::CacheManager>  cache_;
   std::auto_ptr<OrthancPlugins::CacheScheduler>  scheduler_;
 
 public:
-  CacheContext(const std::string& path)
+  CacheContext(const std::string& path) : storage_(path)
   {
     boost::filesystem::path p(path);
+    db_.Open((p / "cache.db").string());
 
-    storage_.reset(new Orthanc::FilesystemStorage(path));
-    db_.reset(new Orthanc::SQLite::Connection());
-    db_->Open((p / "cache.db").string());
-
-    cache_.reset(new OrthancPlugins::CacheManager(*db_, *storage_));
+    cache_.reset(new OrthancPlugins::CacheManager(db_, storage_));
     //cache_->SetSanityCheckEnabled(true);  // For debug
 
     scheduler_.reset(new OrthancPlugins::CacheScheduler(*cache_, 100));
+  }
+
+  ~CacheContext()
+  {
+    scheduler_.reset(NULL);
+    cache_.reset(NULL);
   }
 
   OrthancPlugins::CacheScheduler& GetScheduler()
