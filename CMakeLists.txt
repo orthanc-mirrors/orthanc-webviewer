@@ -128,7 +128,11 @@ if (APPLE)
   SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework CoreFoundation")
   SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -framework CoreFoundation")
 endif()
- 
+
+add_definitions(
+  -DORTHANC_ENABLE_MD5=0
+  -DORTHANC_ENABLE_BASE64=0
+  )
 
 set(CORE_SOURCES
   ${BOOST_SOURCES}
@@ -158,7 +162,6 @@ set(CORE_SOURCES
   ${CMAKE_SOURCE_DIR}/Orthanc/Core/Toolbox.cpp
   ${CMAKE_SOURCE_DIR}/Orthanc/Core/Uuid.cpp
   ${CMAKE_SOURCE_DIR}/Orthanc/Resources/ThirdParty/base64/base64.cpp
-  ${CMAKE_SOURCE_DIR}/Orthanc/Resources/ThirdParty/md5/md5.c
 
   ${CMAKE_SOURCE_DIR}/Plugin/Cache/CacheManager.cpp
   ${CMAKE_SOURCE_DIR}/Plugin/Cache/CacheScheduler.cpp

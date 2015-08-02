@@ -24,16 +24,6 @@ The Web viewer is based upon the following projects:
   http://sourceforge.net/projects/gdcm/
 
 
-Supported Platforms
--------------------
-
-Currently, the supported platforms are:
-
-* Linux 32bit.
-* Linux 64bit.
-* Windows 32bit.
-
-
 Build Instructions
 ------------------
 
