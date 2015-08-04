@@ -34,6 +34,7 @@ FILES = [
     'Core/ImageFormats/PngReader.h',
     'Core/ImageFormats/PngWriter.cpp',
     'Core/ImageFormats/PngWriter.h',
+    'Core/Logging.h',
     'Core/MultiThreading/SharedMessageQueue.cpp',
     'Core/MultiThreading/SharedMessageQueue.h',
     'Core/OrthancException.cpp',

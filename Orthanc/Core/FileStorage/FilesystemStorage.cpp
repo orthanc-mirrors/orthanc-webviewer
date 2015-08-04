@@ -36,15 +36,13 @@
 // http://stackoverflow.com/questions/1576272/storing-large-number-of-files-in-file-system
 // http://stackoverflow.com/questions/446358/storing-a-large-number-of-images
 
+#include "../Logging.h"
 #include "../OrthancException.h"
 #include "../Toolbox.h"
 #include "../Uuid.h"
 
 #include <boost/filesystem/fstream.hpp>
 
-#if HAVE_GOOGLE_LOG == 1
-#include <glog/logging.h>
-#endif
 
 static std::string ToString(const boost::filesystem::path& p)
 {
@@ -215,7 +213,7 @@ namespace Orthanc
   void FilesystemStorage::Remove(const std::string& uuid,
                                  FileContentType /*type*/)
   {
-#if HAVE_GOOGLE_LOG == 1
+#if ORTHANC_ENABLE_GOOGLE_LOG == 1
     LOG(INFO) << "Deleting file " << uuid;
 #endif
 
