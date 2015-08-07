@@ -36,6 +36,7 @@ set(USE_SYSTEM_LIBJPEG ON CACHE BOOL "Use the system version of libjpeg")
 set(USE_SYSTEM_LIBPNG ON CACHE BOOL "Use the system version of libpng")
 set(USE_SYSTEM_ZLIB ON CACHE BOOL "Use the system version of zlib")
 set(USE_SYSTEM_SQLITE ON CACHE BOOL "Use the system version of SQLite")
+set(USE_SYSTEM_ORTHANC_SDK ON CACHE BOOL "Use the system version of the Orthanc plugin SDK")
 
 # Distribution-specific settings
 set(USE_GTEST_DEBIAN_SOURCE_PACKAGE OFF CACHE BOOL "Use the sources of Google Test shipped with libgtest-dev (Debian only)")
@@ -63,7 +64,7 @@ include(${CMAKE_SOURCE_DIR}/Resources/CMake/JavaScriptLibraries.cmake)
 
 
 # Check that the Orthanc SDK headers are available or download them
-if (STATIC_BUILD)
+if (STATIC_BUILD OR NOT USE_SYSTEM_ORTHANC_SDK)
   include_directories(${ORTHANC_ROOT}/Sdk-0.9.1)
 else ()
   CHECK_INCLUDE_FILE_CXX(orthanc/OrthancCPlugin.h HAVE_ORTHANC_H)
