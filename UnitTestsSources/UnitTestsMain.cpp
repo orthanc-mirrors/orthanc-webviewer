@@ -101,19 +101,19 @@ TEST_F(CacheManagerTest, DefaultQuota)
 {
   std::set<std::string> f;
   GetStorage().ListAllFiles(f);
-  ASSERT_EQ(0, f.size());
+  ASSERT_EQ(0u, f.size());
   
   GetCache().SetDefaultQuota(10, 0);
-  for (int i = 0; i < 30; i++)
+  for (unsigned int i = 0; i < 30; i++)
   {
     GetStorage().ListAllFiles(f);
-    ASSERT_EQ(i >= 10 ? 10 : i, f.size());
+    ASSERT_EQ(i >= 10 ? 10u : i, f.size());
     std::string s = boost::lexical_cast<std::string>(i);
     GetCache().Store(0, s, "Test " + s);
   }
 
   GetStorage().ListAllFiles(f);
-  ASSERT_EQ(10, f.size());
+  ASSERT_EQ(10u, f.size());
 
   for (int i = 0; i < 30; i++)
   {
@@ -122,7 +122,7 @@ TEST_F(CacheManagerTest, DefaultQuota)
 
   GetCache().SetDefaultQuota(5, 0);
   GetStorage().ListAllFiles(f);
-  ASSERT_EQ(5, f.size());
+  ASSERT_EQ(5u, f.size());
   for (int i = 0; i < 30; i++)
   {
     ASSERT_EQ(i >= 25, GetCache().IsCached(0, boost::lexical_cast<std::string>(i)));
@@ -135,7 +135,7 @@ TEST_F(CacheManagerTest, DefaultQuota)
   }
 
   GetStorage().ListAllFiles(f);
-  ASSERT_EQ(5, f.size());
+  ASSERT_EQ(5u, f.size());
 
   for (int i = 0; i < 50; i++)
   {
@@ -167,11 +167,11 @@ TEST_F(CacheManagerTest, Invalidate)
 
   std::set<std::string> f;
   GetStorage().ListAllFiles(f);
-  ASSERT_EQ(10, f.size());
+  ASSERT_EQ(10u, f.size());
 
   GetCache().Invalidate(0, "25");
   GetStorage().ListAllFiles(f);
-  ASSERT_EQ(9, f.size());
+  ASSERT_EQ(9u, f.size());
   for (int i = 0; i < 50; i++)
   {
     std::string s = boost::lexical_cast<std::string>(i);
@@ -184,7 +184,7 @@ TEST_F(CacheManagerTest, Invalidate)
   }
 
   GetStorage().ListAllFiles(f);
-  ASSERT_EQ(0, f.size());
+  ASSERT_EQ(0u, f.size());
 }
 
 
