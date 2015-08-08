@@ -363,15 +363,10 @@ $(document).ready(function() {
     success: function(volume) {
       if (volume.SortedInstances.length != 0) {
         instances = volume.SortedInstances;
-        $('#topright').html([
-          $('<span>').text(volume.PatientID),
-          $('<br>'),
-          $('<span>').text(volume.PatientName),
-          $('<br>'),
-          $('<span>').text(volume.StudyDescription),
-          $('<br>'),
-          $('<span>').text(volume.SeriesDescription)
-        ]);
+        $('#topright').html(volume.PatientID + '<br/>' +
+                            volume.PatientName + '<br/>' +
+                            volume.StudyDescription + '<br/>' +
+                            volume.SeriesDescription + '<br/>');
       }
     }
   });
