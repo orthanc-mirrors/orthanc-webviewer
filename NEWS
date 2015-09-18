@@ -1,11 +1,15 @@
 Pending changes in the mainline
 ===============================
 
+=> Minimum SDK version: 0.9.4 <=
+
 * Fix for old versions of jQuery
 
 
 Version 1.2 (2015-08-02)
 ========================
+
+=> Minimum SDK version: 0.9.1 <=
 
 * Update to Boost 1.58.0 for static and Windows builds
 * Inject version information into Windows binaries

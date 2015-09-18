@@ -31,6 +31,16 @@
 #include "SeriesInformationAdapter.h"
 
 
+#if (ORTHANC_PLUGINS_MINIMAL_MINOR_NUMBER >= 9 && ORTHANC_PLUGINS_MINIMAL_REVISION_NUMBER >= 5)
+#  define RETURN_TYPE     OrthancPluginErrorCode
+#  define RETURN_SUCCESS  OrthancPluginErrorCode_Success
+#  define RETURN_FAILURE  OrthancPluginErrorCode_Plugin
+#else
+#  define RETURN_TYPE     int32_t
+#  define RETURN_SUCCESS  0
+#  define RETURN_FAILURE  -1
+#endif
+
 
 class CacheContext
 {
@@ -71,9 +81,9 @@ static CacheContext* cache_ = NULL;
 
 
 
-static int32_t OnChangeCallback(OrthancPluginChangeType changeType,
-                                OrthancPluginResourceType resourceType,
-                                const char* resourceId)
+static RETURN_TYPE OnChangeCallback(OrthancPluginChangeType changeType,
+                                    OrthancPluginResourceType resourceType,
+                                    const char* resourceId)
 {
   try
   {
@@ -93,28 +103,28 @@ static int32_t OnChangeCallback(OrthancPluginChangeType changeType,
       }
     }
 
-    return 0;
+    return RETURN_SUCCESS;
   }
   catch (std::runtime_error& e)
   {
     OrthancPluginLogError(context_, e.what());
-    return 0;  // Ignore error
+    return RETURN_SUCCESS;  // Ignore error
   }
 }
 
 
 
 template <enum OrthancPlugins::CacheBundle bundle>
-int32_t ServeCache(OrthancPluginRestOutput* output,
-                   const char* url,
-                   const OrthancPluginHttpRequest* request)
+static RETURN_TYPE ServeCache(OrthancPluginRestOutput* output,
+                              const char* url,
+                              const OrthancPluginHttpRequest* request)
 {
   try
   {
     if (request->method != OrthancPluginHttpMethod_Get)
     {
       OrthancPluginSendMethodNotAllowed(context_, output, "GET");
-      return 0;
+      return RETURN_SUCCESS;
     }
 
     const std::string id = request->groups[0];
@@ -129,22 +139,22 @@ int32_t ServeCache(OrthancPluginRestOutput* output,
       OrthancPluginSendHttpStatusCode(context_, output, 404);
     }
 
-    return 0;
+    return RETURN_SUCCESS;
   }
   catch (Orthanc::OrthancException& e)
   {
     OrthancPluginLogError(context_, e.What());
-    return -1;
+    return RETURN_FAILURE;
   }
   catch (std::runtime_error& e)
   {
     OrthancPluginLogError(context_, e.what());
-    return -1;
+    return RETURN_FAILURE;
   }
   catch (boost::bad_lexical_cast&)
   {
     OrthancPluginLogError(context_, "Bad lexical cast");
-    return -1;
+    return RETURN_FAILURE;
   }
 }
 
@@ -185,14 +195,14 @@ static int32_t ServeWebViewer(OrthancPluginRestOutput* output,
 
 
 template <enum Orthanc::EmbeddedResources::DirectoryResourceId folder>
-static int32_t ServeEmbeddedFolder(OrthancPluginRestOutput* output,
-                                   const char* url,
-                                   const OrthancPluginHttpRequest* request)
+static RETURN_TYPE ServeEmbeddedFolder(OrthancPluginRestOutput* output,
+                                       const char* url,
+                                       const OrthancPluginHttpRequest* request)
 {
   if (request->method != OrthancPluginHttpMethod_Get)
   {
     OrthancPluginSendMethodNotAllowed(context_, output, "GET");
-    return 0;
+    return RETURN_SUCCESS;
   }
 
   std::string path = "/" + std::string(request->groups[0]);
@@ -206,29 +216,29 @@ static int32_t ServeEmbeddedFolder(OrthancPluginRestOutput* output,
     const char* resource = s.size() ? s.c_str() : NULL;
     OrthancPluginAnswerBuffer(context_, output, resource, s.size(), mime);
 
-    return 0;
+    return RETURN_SUCCESS;
   }
   catch (std::runtime_error&)
   {
     std::string s = "Unknown static resource in plugin: " + std::string(request->groups[0]);
     OrthancPluginLogError(context_, s.c_str());
     OrthancPluginSendHttpStatusCode(context_, output, 404);
-    return 0;
+    return RETURN_SUCCESS;
   }
 }
 
 
 
-static int32_t IsStableSeries(OrthancPluginRestOutput* output,
-                              const char* url,
-                              const OrthancPluginHttpRequest* request)
+static RETURN_TYPE IsStableSeries(OrthancPluginRestOutput* output,
+                                  const char* url,
+                                  const OrthancPluginHttpRequest* request)
 {
  try
   {
     if (request->method != OrthancPluginHttpMethod_Get)
     {
       OrthancPluginSendMethodNotAllowed(context_, output, "GET");
-      return 0;
+      return RETURN_SUCCESS;
     }
 
     const std::string id = request->groups[0];
@@ -247,22 +257,22 @@ static int32_t IsStableSeries(OrthancPluginRestOutput* output,
       OrthancPluginSendHttpStatusCode(context_, output, 404);
     }
 
-    return 0;
+    return RETURN_SUCCESS;
   }
   catch (Orthanc::OrthancException& e)
   {
     OrthancPluginLogError(context_, e.What());
-    return -1;
+    return RETURN_FAILURE;
   }
   catch (std::runtime_error& e)
   {
     OrthancPluginLogError(context_, e.what());
-    return -1;
+    return RETURN_FAILURE;
   }
   catch (boost::bad_lexical_cast&)
   {
     OrthancPluginLogError(context_, "Bad lexical cast");
-    return -1;
+    return RETURN_FAILURE;
   }
 }
 
