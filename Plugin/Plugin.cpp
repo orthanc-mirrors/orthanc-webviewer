@@ -42,17 +42,68 @@
 #endif
 
 
+static OrthancPluginContext* context_ = NULL;
+
+
+
 class CacheContext
 {
 private:
+  class DynamicString : public Orthanc::IDynamicObject
+  {
+  private:
+    std::string  value_;
+
+  public:
+    DynamicString(const char* value) : value_(value)
+    {
+    }
+    
+    const std::string& GetValue() const
+    {
+      return value_;
+    }
+  };
+
   Orthanc::FilesystemStorage  storage_;
   Orthanc::SQLite::Connection  db_;
 
   std::auto_ptr<OrthancPlugins::CacheManager>  cache_;
   std::auto_ptr<OrthancPlugins::CacheScheduler>  scheduler_;
 
+  Orthanc::SharedMessageQueue  newInstances_;
+  bool stop_;
+  boost::thread newInstancesThread_;
+
+
+  static void NewInstancesThread(CacheContext* cache)
+  {
+    while (!cache->stop_)
+    {
+      std::auto_ptr<Orthanc::IDynamicObject> obj(cache->newInstances_.Dequeue(100));
+      if (obj.get() != NULL)
+      {
+        const std::string& instanceId = dynamic_cast<DynamicString&>(*obj).GetValue();
+        printf("[%s]\n", instanceId.c_str());
+
+        // On the reception of a new instance, precompute its spatial position
+        cache->GetScheduler().Prefetch(OrthancPlugins::CacheBundle_InstanceInformation, instanceId);
+     
+        // Indalidate the parent series of the instance
+        std::string uri = "/instances/" + std::string(instanceId);
+        Json::Value instance;
+        if (OrthancPlugins::GetJsonFromOrthanc(instance, context_, uri))
+        {
+          std::string seriesId = instance["ParentSeries"].asString();
+          cache->GetScheduler().Invalidate(OrthancPlugins::CacheBundle_SeriesInformation, seriesId);
+        }
+      }
+    }
+  }
+
+
 public:
-  CacheContext(const std::string& path) : storage_(path)
+  CacheContext(const std::string& path) : storage_(path), stop_(false)
   {
     boost::filesystem::path p(path);
     db_.Open((p / "cache.db").string());
@@ -61,10 +112,18 @@ public:
     //cache_->SetSanityCheckEnabled(true);  // For debug
 
     scheduler_.reset(new OrthancPlugins::CacheScheduler(*cache_, 100));
+
+    newInstancesThread_ = boost::thread(NewInstancesThread, this);
   }
 
   ~CacheContext()
   {
+    stop_ = true;
+    if (newInstancesThread_.joinable())
+    {
+      newInstancesThread_.join();
+    }
+
     scheduler_.reset(NULL);
     cache_.reset(NULL);
   }
@@ -73,10 +132,15 @@ public:
   {
     return *scheduler_;
   }
+
+  void SignalNewInstance(const char* instanceId)
+  {
+    newInstances_.Enqueue(new DynamicString(instanceId));
+  }
 };
 
 
-static OrthancPluginContext* context_ = NULL;
+
 static CacheContext* cache_ = NULL;
 
 
@@ -90,17 +154,7 @@ static RETURN_TYPE OnChangeCallback(OrthancPluginChangeType changeType,
     if (changeType == OrthancPluginChangeType_NewInstance &&
         resourceType == OrthancPluginResourceType_Instance)
     {
-      // On the reception of a new instance, precompute its spatial position
-      cache_->GetScheduler().Prefetch(OrthancPlugins::CacheBundle_InstanceInformation, resourceId);
-     
-      // Indalidate the parent series of the instance
-      std::string uri = "/instances/" + std::string(resourceId);
-      Json::Value instance;
-      if (OrthancPlugins::GetJsonFromOrthanc(instance, context_, uri))
-      {
-        std::string seriesId = instance["ParentSeries"].asString();
-        cache_->GetScheduler().Invalidate(OrthancPlugins::CacheBundle_SeriesInformation, seriesId);
-      }
+      cache_->SignalNewInstance(resourceId);
     }
 
     return RETURN_SUCCESS;
