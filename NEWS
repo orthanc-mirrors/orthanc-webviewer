@@ -5,6 +5,7 @@ Pending changes in the mainline
 
 * Fix for old versions of jQuery
 * Fix possible deadlock with other plugins in OnChangeCallback()
+* Use Orthanc's primitives for PNG and JPEG
 
 
 Version 1.2 (2015-08-02)

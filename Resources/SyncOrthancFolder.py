@@ -9,7 +9,7 @@ import os
 import shutil
 import urllib2
 
-PLUGIN_SDK_VERSION = '0.9.1'
+PLUGIN_SDK_VERSION = '0.9.4'
 
 SOURCE = '/home/jodogne/Subversion/Orthanc'
 TARGET = os.path.join(os.path.dirname(__file__), '..', 'Orthanc')
@@ -24,20 +24,15 @@ FILES = [
     'Core/FileStorage/FilesystemStorage.h',
     'Core/FileStorage/IStorageArea.h',
     'Core/IDynamicObject.h',
-    'Core/ImageFormats/ImageAccessor.cpp',
-    'Core/ImageFormats/ImageAccessor.h',
-    'Core/ImageFormats/ImageBuffer.cpp',
-    'Core/ImageFormats/ImageBuffer.h',
-    'Core/ImageFormats/ImageProcessing.cpp',
-    'Core/ImageFormats/ImageProcessing.h',
-    'Core/ImageFormats/PngReader.cpp',
-    'Core/ImageFormats/PngReader.h',
-    'Core/ImageFormats/PngWriter.cpp',
-    'Core/ImageFormats/PngWriter.h',
+    'Core/Images/ImageAccessor.cpp',
+    'Core/Images/ImageAccessor.h',
+    'Core/Images/ImageBuffer.cpp',
+    'Core/Images/ImageBuffer.h',
+    'Core/Images/ImageProcessing.cpp',
+    'Core/Images/ImageProcessing.h',
     'Core/Logging.h',
     'Core/MultiThreading/SharedMessageQueue.cpp',
     'Core/MultiThreading/SharedMessageQueue.h',
-    'Core/OrthancException.cpp',
     'Core/OrthancException.h',
     'Core/PrecompiledHeaders.cpp',
     'Core/PrecompiledHeaders.h',
@@ -72,9 +67,7 @@ FILES = [
     'Resources/CMake/DownloadPackage.cmake',
     'Resources/CMake/GoogleTestConfiguration.cmake',
     'Resources/CMake/JsonCppConfiguration.cmake',
-    'Resources/CMake/LibPngConfiguration.cmake',
     'Resources/CMake/SQLiteConfiguration.cmake',
-    'Resources/CMake/ZlibConfiguration.cmake',
     'Resources/ThirdParty/base64/base64.h',
     'Resources/ThirdParty/base64/base64.cpp',
     'Resources/ThirdParty/VisualStudio/stdint.h',
