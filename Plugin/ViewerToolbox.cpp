@@ -24,7 +24,6 @@
 #include "../Orthanc/Core/Toolbox.h"
 
 #include <json/reader.h>
-#include <zlib.h>
 #include <stdexcept>
 #include <boost/lexical_cast.hpp>
 #include <sys/stat.h>
@@ -51,7 +50,7 @@ namespace OrthancPlugins
       catch (std::bad_alloc&)
       {
         OrthancPluginFreeMemoryBuffer(context, &answer);
-        throw Orthanc::OrthancException("Not enough memory");
+        throw Orthanc::OrthancException(Orthanc::ErrorCode_NotEnoughMemory);
       }
     }
 
@@ -127,39 +126,33 @@ namespace OrthancPlugins
   }
 
 
-  bool CompressUsingDeflate(std::string& compressed,
+  void CompressUsingDeflate(std::string& compressed,
+                            OrthancPluginContext* context,
                             const void* uncompressed,
-                            size_t uncompressedSize,
-                            uint8_t compressionLevel)
+                            size_t uncompressedSize)
   {
-    if (uncompressedSize == 0)
+    OrthancPluginMemoryBuffer tmp;
+   
+    OrthancPluginErrorCode code = OrthancPluginBufferCompression(
+      context, &tmp, uncompressed, uncompressedSize, 
+      OrthancPluginCompressionType_Zlib, 0 /*compress*/);
+      
+    if (code != OrthancPluginErrorCode_Success)
     {
-      compressed.clear();
-      return true;
+      throw Orthanc::OrthancException(static_cast<Orthanc::ErrorCode>(code));
     }
 
-    uLongf compressedSize = compressBound(uncompressedSize);
-    compressed.resize(compressedSize);
-
-    int error = compress2
-      (reinterpret_cast<uint8_t*>(&compressed[0]),
-       &compressedSize,
-       const_cast<Bytef *>(static_cast<const Bytef *>(uncompressed)), 
-       uncompressedSize,
-       compressionLevel);
-
-    if (error == Z_OK)
+    try
     {
-      compressed.resize(compressedSize);
-      return true;
+      compressed.assign(reinterpret_cast<const char*>(tmp.data), tmp.size);
     }
-    else
+    catch (...)
     {
-      compressed.clear();
-      return false;
+      throw Orthanc::OrthancException(Orthanc::ErrorCode_NotEnoughMemory);
     }
+
+    OrthancPluginFreeMemoryBuffer(context, &tmp);
   }
-
 
 
   const char* GetMimeType(const std::string& path)
@@ -276,50 +269,116 @@ namespace OrthancPlugins
   }
 
 
-  bool ReadFile(std::string& content,
-                const std::string& path)
+  OrthancPluginPixelFormat Convert(Orthanc::PixelFormat format)
   {
-    struct stat s;
-    if (stat(path.c_str(), &s) != 0 ||
-        !(s.st_mode & S_IFREG))
+    switch (format)
     {
-      // Either the path does not exist, or it is not a regular file
-      return false;
+      case Orthanc::PixelFormat_Grayscale16:
+        return OrthancPluginPixelFormat_Grayscale16;
+
+      case Orthanc::PixelFormat_Grayscale8:
+        return OrthancPluginPixelFormat_Grayscale8;
+
+      case Orthanc::PixelFormat_RGB24:
+        return OrthancPluginPixelFormat_RGB24;
+
+      case Orthanc::PixelFormat_RGBA32:
+        return OrthancPluginPixelFormat_RGBA32;
+
+      case Orthanc::PixelFormat_SignedGrayscale16:
+        return OrthancPluginPixelFormat_SignedGrayscale16;
+
+      default:
+        throw Orthanc::OrthancException(Orthanc::ErrorCode_ParameterOutOfRange);
+    }
+  }
+
+
+  Orthanc::PixelFormat Convert(OrthancPluginPixelFormat format)
+  {
+    switch (format)
+    {
+      case OrthancPluginPixelFormat_Grayscale16:
+        return Orthanc::PixelFormat_Grayscale16;
+
+      case OrthancPluginPixelFormat_Grayscale8:
+        return Orthanc::PixelFormat_Grayscale8;
+
+      case OrthancPluginPixelFormat_RGB24:
+        return Orthanc::PixelFormat_RGB24;
+
+      case OrthancPluginPixelFormat_RGBA32:
+        return Orthanc::PixelFormat_RGBA32;
+
+      case OrthancPluginPixelFormat_SignedGrayscale16:
+        return Orthanc::PixelFormat_SignedGrayscale16;
+
+      default:
+        throw Orthanc::OrthancException(Orthanc::ErrorCode_ParameterOutOfRange);
+    }
+  }
+
+
+  void WriteJpegToMemory(std::string& result,
+                         OrthancPluginContext* context,
+                         const Orthanc::ImageAccessor& accessor,
+                         uint8_t quality)
+  {
+    OrthancPluginMemoryBuffer tmp;
+   
+    OrthancPluginErrorCode code = OrthancPluginCompressJpegImage
+      (context, &tmp, Convert(accessor.GetFormat()), 
+       accessor.GetWidth(), accessor.GetHeight(), accessor.GetPitch(),
+       accessor.GetBuffer(), quality);
+
+    if (code != OrthancPluginErrorCode_Success)
+    {
+      throw Orthanc::OrthancException(static_cast<Orthanc::ErrorCode>(code));
     }
 
-    FILE* fp = fopen(path.c_str(), "rb");
-    if (fp == NULL)
+    try
     {
-      return false;
+      result.assign(reinterpret_cast<const char*>(tmp.data), tmp.size);
+    }
+    catch (...)
+    {
+      throw Orthanc::OrthancException(Orthanc::ErrorCode_NotEnoughMemory);
     }
 
-    long size;
+    OrthancPluginFreeMemoryBuffer(context, &tmp);
+  }
 
-    if (fseek(fp, 0, SEEK_END) == -1 ||
-        (size = ftell(fp)) < 0)
+
+
+  ImageReader::ImageReader(OrthancPluginContext* context,
+                           const std::string& image,
+                           OrthancPluginImageFormat format) : context_(context)
+  {
+    image_ = OrthancPluginUncompressImage(context_, image.c_str(), image.size(), format);
+
+    if (image_ == NULL)
     {
-      fclose(fp);
-      return false;
+      throw Orthanc::OrthancException(Orthanc::ErrorCode_CorruptedFile);
     }
+  }
 
-    content.resize(size);
-      
-    if (fseek(fp, 0, SEEK_SET) == -1)
-    {
-      fclose(fp);
-      return false;
-    }
 
-    bool ok = true;
+  ImageReader::~ImageReader()
+  {
+    OrthancPluginFreeImage(context_, image_);
+  }
 
-    if (size > 0 &&
-        fread(&content[0], size, 1, fp) != 1)
-    {
-      ok = false;
-    }
 
-    fclose(fp);
+  Orthanc::ImageAccessor ImageReader::GetAccessor() const
+  {
+    Orthanc::ImageAccessor accessor;
 
-    return ok;
+    accessor.AssignReadOnly(Convert(OrthancPluginGetImagePixelFormat(context_, image_)),
+                            OrthancPluginGetImageWidth(context_, image_),
+                            OrthancPluginGetImageHeight(context_, image_),
+                            OrthancPluginGetImagePitch(context_, image_),
+                            OrthancPluginGetImageBuffer(context_, image_));
+
+    return accessor;
   }
 }

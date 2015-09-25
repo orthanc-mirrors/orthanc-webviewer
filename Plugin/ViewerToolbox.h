@@ -24,6 +24,8 @@
 #include <json/value.h>
 #include <orthanc/OrthancCPlugin.h>
 
+#include "../Orthanc/Core/Images/ImageAccessor.h"
+
 namespace OrthancPlugins
 {
   enum CacheBundle
@@ -45,10 +47,10 @@ namespace OrthancPlugins
                       const std::string& value,
                       unsigned int expectedSize);
 
-  bool CompressUsingDeflate(std::string& compressed,
+  void CompressUsingDeflate(std::string& compressed,
+                            OrthancPluginContext* context,
                             const void* uncompressed,
-                            size_t uncompressedSize,
-                            uint8_t compressionLevel);
+                            size_t uncompressedSize);
 
   const char* GetMimeType(const std::string& path);
 
@@ -63,6 +65,30 @@ namespace OrthancPlugins
                       const std::string& key,
                       int defaultValue);
 
-  bool ReadFile(std::string& content,
-                const std::string& path);
+
+
+  OrthancPluginPixelFormat Convert(Orthanc::PixelFormat format);
+
+  Orthanc::PixelFormat Convert(OrthancPluginPixelFormat format);
+
+  void WriteJpegToMemory(std::string& result,
+                         OrthancPluginContext* context,
+                         const Orthanc::ImageAccessor& accessor,
+                         uint8_t quality);
+ 
+  class ImageReader
+  {
+  private:
+    OrthancPluginContext* context_;
+    OrthancPluginImage*   image_;
+
+  public:
+    ImageReader(OrthancPluginContext* context,
+                const std::string& image,
+                OrthancPluginImageFormat format);
+
+    ~ImageReader();
+
+    Orthanc::ImageAccessor GetAccessor() const;
+  };
 }

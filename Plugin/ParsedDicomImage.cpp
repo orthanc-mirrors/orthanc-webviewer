@@ -22,10 +22,8 @@
 
 #include "../Orthanc/Core/OrthancException.h"
 #include "../Orthanc/Core/Toolbox.h"
-#include "../Orthanc/Core/ImageFormats/ImageProcessing.h"
-#include "../Orthanc/Core/ImageFormats/ImageBuffer.h"
-#include "../Orthanc/Core/ImageFormats/PngReader.h"
-#include "JpegWriter.h"
+#include "../Orthanc/Core/Images/ImageProcessing.h"
+#include "../Orthanc/Core/Images/ImageBuffer.h"
 #include "ViewerToolbox.h"
 
 #include <gdcmImageReader.h>
@@ -48,8 +46,7 @@ namespace OrthancPlugins
     std::auto_ptr<gdcm::ImageChangePhotometricInterpretation> photometric_;
     std::auto_ptr<gdcm::ImageChangePlanarConfiguration> interleaved_;
     std::string decoded_;
-    Orthanc::PngReader png_;
-    bool insidePng_;
+    std::auto_ptr<ImageReader> png_;
     bool isDecoded_;
 
     bool DecodeUsingGdcm()
@@ -151,8 +148,7 @@ namespace OrthancPlugins
       {
         try
         {
-          png_.ReadFromMemory(png);
-          insidePng_ = true;
+          png_.reset(new ImageReader(context_, png, OrthancPluginImageFormat_Png));
           return true;
         }
         catch (Orthanc::OrthancException&)
@@ -198,9 +194,14 @@ namespace OrthancPlugins
           const std::string& instanceId) : 
       context_(context),
       instanceId_(instanceId),
-      insidePng_(false),
       isDecoded_(false)
     {
+    }
+
+
+    OrthancPluginContext* GetContext()
+    {
+      return context_;
     }
 
 
@@ -235,7 +236,8 @@ namespace OrthancPlugins
       reader_.SetStream(stream);
       if (!reader_.Read())
       {
-        throw Orthanc::OrthancException("GDCM cannot extract an image from this DICOM instance");
+        OrthancPluginLogError(context_, "GDCM cannot extract an image from this DICOM instance");
+        throw Orthanc::OrthancException(Orthanc::ErrorCode_IncompatibleImageFormat);
       }
     }
 
@@ -247,10 +249,10 @@ namespace OrthancPlugins
         return false;
       }
 
-      if (insidePng_)
+      if (png_.get() != NULL)
       {
         // The image was decoded using Orthanc's built-in REST API
-        accessor = png_;
+        accessor = png_->GetAccessor();
         return true;
       }
 
@@ -527,10 +529,7 @@ namespace OrthancPlugins
     result["sizeInBytes"] = converted.GetSize();
 
     std::string z;
-    if (!CompressUsingDeflate(z, converted.GetConstBuffer(), converted.GetSize(), compressionLevel))
-    {
-      return false;
-    }
+    CompressUsingDeflate(z, pimpl_->GetContext(), converted.GetConstBuffer(), converted.GetSize());
 
     result["Orthanc"]["PixelData"] = base64_encode(z);  
 
@@ -597,9 +596,8 @@ namespace OrthancPlugins
     result["sizeInBytes"] = converted.GetSize();
 
     std::string jpeg;
-    OrthancPlugins::JpegWriter writer;
-    writer.SetQuality(quality);
-    writer.WriteToMemory(jpeg, converted);
+    WriteJpegToMemory(jpeg, pimpl_->GetContext(), converted, quality);
+
     result["Orthanc"]["PixelData"] = base64_encode(jpeg);  
     return true;
   }

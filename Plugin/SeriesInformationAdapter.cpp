@@ -61,7 +61,8 @@ namespace OrthancPlugins
 
       if (!cache_.Access(tmp, CacheBundle_InstanceInformation, instanceId))
       {
-        throw Orthanc::OrthancException("The cache is corrupted. Delete it to reconstruct it.");
+        OrthancPluginLogError(context_, "The cache is corrupted. Delete it to reconstruct it.");
+        throw Orthanc::OrthancException(Orthanc::ErrorCode_CorruptedFile);
       }
 
       InstanceInformation instance(tmp);

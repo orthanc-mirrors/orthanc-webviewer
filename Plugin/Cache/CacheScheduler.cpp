@@ -265,7 +265,8 @@ namespace OrthancPlugins
     BundleSchedulers::iterator it = bundles_.find(bundleIndex);
     if (it == bundles_.end())
     {
-      throw Orthanc::OrthancException("No factory associated with this bundle");
+      // No factory associated with this bundle
+      throw Orthanc::OrthancException(Orthanc::ErrorCode_ParameterOutOfRange);
     }
 
     return *(it->second);

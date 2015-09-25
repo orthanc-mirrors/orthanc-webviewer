@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "../Orthanc/Core/ImageFormats/ImageAccessor.h"
+#include "../Orthanc/Core/Images/ImageAccessor.h"
 
 #include <orthanc/OrthancCPlugin.h>
 #include <stdint.h>

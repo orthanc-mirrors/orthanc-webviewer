@@ -84,7 +84,6 @@ private:
       if (obj.get() != NULL)
       {
         const std::string& instanceId = dynamic_cast<DynamicString&>(*obj).GetValue();
-        printf("[%s]\n", instanceId.c_str());
 
         // On the reception of a new instance, precompute its spatial position
         cache->GetScheduler().Prefetch(OrthancPlugins::CacheBundle_InstanceInformation, instanceId);
