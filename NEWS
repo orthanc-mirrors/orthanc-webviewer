@@ -3,9 +3,10 @@ Pending changes in the mainline
 
 => Minimum SDK version: 0.9.4 <=
 
+* Support of images encoded using LUT (lookup tables)
+* Use Orthanc's primitives for PNG and JPEG
 * Fix for old versions of jQuery
 * Fix possible deadlock with other plugins in OnChangeCallback()
-* Use Orthanc's primitives for PNG and JPEG
 
 
 Version 1.2 (2015-08-02)

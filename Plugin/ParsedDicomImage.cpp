@@ -27,6 +27,7 @@
 #include "ViewerToolbox.h"
 
 #include <gdcmImageReader.h>
+#include <gdcmImageApplyLookupTable.h>
 #include <gdcmImageChangePlanarConfiguration.h>
 #include <gdcmImageChangePhotometricInterpretation.h>
 #include <boost/lexical_cast.hpp>
@@ -43,6 +44,7 @@ namespace OrthancPlugins
     OrthancPluginContext* context_;
     std::string instanceId_;
     gdcm::ImageReader reader_;
+    std::auto_ptr<gdcm::ImageApplyLookupTable> lut_;
     std::auto_ptr<gdcm::ImageChangePhotometricInterpretation> photometric_;
     std::auto_ptr<gdcm::ImageChangePlanarConfiguration> interleaved_;
     std::string decoded_;
@@ -51,10 +53,21 @@ namespace OrthancPlugins
 
     bool DecodeUsingGdcm()
     {
-      // Change photometric interpretation, if required
+      // Change photometric interpretation or apply LUT, if required
       {
         const gdcm::Image& image = GetImage();
-        if (image.GetPixelFormat().GetSamplesPerPixel() == 1)
+        if (image.GetPixelFormat().GetSamplesPerPixel() == 1 &&
+            image.GetPhotometricInterpretation() == gdcm::PhotometricInterpretation::PALETTE_COLOR)
+        {
+          lut_.reset(new gdcm::ImageApplyLookupTable());
+          lut_->SetInput(image);
+          if (!lut_->Apply())
+          {
+            OrthancPluginLogWarning(context_, "GDCM cannot apply the lookup table");
+            return false;
+          }
+        }
+        else if (image.GetPixelFormat().GetSamplesPerPixel() == 1)
         {
           if (image.GetPhotometricInterpretation() != gdcm::PhotometricInterpretation::MONOCHROME1 &&
               image.GetPhotometricInterpretation() != gdcm::PhotometricInterpretation::MONOCHROME2)
@@ -173,6 +186,7 @@ namespace OrthancPlugins
       }
 
       // GDCM cannot decode this image, try and use Orthanc built-in functions
+      lut_.reset();
       photometric_.reset();
       interleaved_.reset();
       decoded_.clear();
@@ -216,6 +230,11 @@ namespace OrthancPlugins
       if (interleaved_.get() != NULL)
       {
         return interleaved_->GetOutput();
+      }
+
+      if (lut_.get() != NULL)
+      {
+        return lut_->GetOutput();
       }
 
       if (photometric_.get() != NULL)
