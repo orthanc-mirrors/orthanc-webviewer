@@ -30,6 +30,7 @@
 #include "InstanceInformationAdapter.h"
 #include "SeriesInformationAdapter.h"
 #include "../Orthanc/Plugins/Samples/GdcmDecoder/GdcmImageDecoder.h"
+#include "../Orthanc/Core/Toolbox.h"
 
 
 static OrthancPluginContext* context_ = NULL;
@@ -205,33 +206,34 @@ static OrthancPluginErrorCode ServeCache(OrthancPluginRestOutput* output,
 
 
 #if ORTHANC_STANDALONE == 0
-static int32_t ServeWebViewer(OrthancPluginRestOutput* output,
-                              const char* url,
-                              const OrthancPluginHttpRequest* request)
+static OrthancPluginErrorCode ServeWebViewer(OrthancPluginRestOutput* output,
+                                             const char* url,
+                                             const OrthancPluginHttpRequest* request)
 {
   if (request->method != OrthancPluginHttpMethod_Get)
   {
     OrthancPluginSendMethodNotAllowed(context_, output, "GET");
-    return 0;
+    return OrthancPluginErrorCode_Success;
   }
 
   const std::string path = std::string(WEB_VIEWER_PATH) + std::string(request->groups[0]);
   const char* mime = OrthancPlugins::GetMimeType(path);
 
   std::string s;
-  if (OrthancPlugins::ReadFile(s, path))
+  try
   {
+    Orthanc::Toolbox::ReadFile(s, path);
     const char* resource = s.size() ? s.c_str() : NULL;
     OrthancPluginAnswerBuffer(context_, output, resource, s.size(), mime);
   }
-  else
+  catch (Orthanc::OrthancException&)
   {
     std::string s = "Inexistent file in served folder: " + path;
     OrthancPluginLogError(context_, s.c_str());
     OrthancPluginSendHttpStatusCode(context_, output, 404);
   }
 
-  return 0;
+  return OrthancPluginErrorCode_Success;
 }
 #endif
 

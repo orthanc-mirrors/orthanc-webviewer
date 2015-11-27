@@ -30,23 +30,29 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <json/writer.h>
+#include <boost/regex.hpp>
 
 namespace OrthancPlugins
 {
   bool DecodedImageAdapter::ParseUri(CompressionType& type,
                                      uint8_t& compressionLevel,
                                      std::string& instanceId,
+                                     unsigned int& frameIndex,
                                      const std::string& uri)
   {
-    size_t separator = uri.find('-');
-    if (separator == std::string::npos &&
-        separator >= 1)
+    boost::regex pattern("^([a-z0-9]+)-([a-z0-9-]+)_([0-9]+)$");
+
+    boost::cmatch what;
+    if (!regex_match(uri.c_str(), what, pattern))
     {
       return false;
     }
-  
-    std::string compression = uri.substr(0, separator);
-    instanceId = uri.substr(separator + 1);
+
+    printf("[%s] [%s] [%s]\n", what[1].str().c_str(), what[2].str().c_str(), what[3].str().c_str());
+
+    std::string compression(what[1]);
+    instanceId = what[2];
+    frameIndex = boost::lexical_cast<unsigned int>(what[3]);
 
     if (compression == "deflate")
     {
@@ -82,8 +88,9 @@ namespace OrthancPlugins
     CompressionType type;
     uint8_t level;
     std::string instanceId;
+    unsigned int frameIndex;
     
-    if (!ParseUri(type, level, instanceId, uri))
+    if (!ParseUri(type, level, instanceId, frameIndex, uri))
     {
       return false;
     }
@@ -99,7 +106,7 @@ namespace OrthancPlugins
       throw Orthanc::OrthancException(Orthanc::ErrorCode_UnknownResource);
     }
 
-    std::auto_ptr<OrthancImageWrapper> image(decoderCache_.Decode(context_, dicom.c_str(), dicom.size(), 0 /* TODO Frame */));
+    std::auto_ptr<OrthancImageWrapper> image(decoderCache_.Decode(context_, dicom.c_str(), dicom.size(), frameIndex));
 
     Json::Value json;
     if (GetCornerstoneMetadata(json, tags, *image))

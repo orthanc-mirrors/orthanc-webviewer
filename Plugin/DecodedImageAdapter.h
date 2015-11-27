@@ -44,6 +44,7 @@ namespace OrthancPlugins
     static bool ParseUri(CompressionType& type,
                          uint8_t& compressionLevel,
                          std::string& instanceId,
+                         unsigned int& frameIndex,
                          const std::string& uri);
 
     static bool GetCornerstoneMetadata(Json::Value& result,

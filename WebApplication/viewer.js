@@ -361,8 +361,8 @@ $(document).ready(function() {
     cache: false,
     async: false,
     success: function(volume) {
-      if (volume.SortedInstances.length != 0) {
-        instances = volume.SortedInstances;
+      if (volume.Slices.length != 0) {
+        instances = volume.Slices;
         $('#topright').html(volume.PatientID + '<br/>' +
                             volume.PatientName + '<br/>' +
                             volume.StudyDescription + '<br/>' +
