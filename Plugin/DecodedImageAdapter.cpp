@@ -48,8 +48,6 @@ namespace OrthancPlugins
       return false;
     }
 
-    printf("[%s] [%s] [%s]\n", what[1].str().c_str(), what[2].str().c_str(), what[3].str().c_str());
-
     std::string compression(what[1]);
     instanceId = what[2];
     frameIndex = boost::lexical_cast<unsigned int>(what[3]);
@@ -334,7 +332,10 @@ namespace OrthancPlugins
         }
         else
         {
-          *q = static_cast<TargetType>(boost::math::iround(v));
+          //*q = static_cast<TargetType>(boost::math::iround(v));
+          
+          // http://stackoverflow.com/a/485546/881731
+          *q = static_cast<TargetType>(floor(v + 0.5f));
         }
       }
     }
