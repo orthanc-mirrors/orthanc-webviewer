@@ -168,6 +168,9 @@ add_library(OrthancWebViewer
   # The following files depend on GDCM
   ${CMAKE_SOURCE_DIR}/Plugin/ParsedDicomImage.cpp
   ${CMAKE_SOURCE_DIR}/Plugin/DecodedImageAdapter.cpp
+  ${CMAKE_SOURCE_DIR}/Orthanc/Plugins/Samples/GdcmDecoder/GdcmImageDecoder.cpp
+  ${CMAKE_SOURCE_DIR}/Orthanc/Plugins/Samples/GdcmDecoder/GdcmDecoderCache.cpp
+  ${CMAKE_SOURCE_DIR}/Orthanc/Plugins/Samples/GdcmDecoder/OrthancImageWrapper.cpp
   )
 
 
