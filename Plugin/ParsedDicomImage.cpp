@@ -36,6 +36,8 @@
 #include "../Orthanc/Resources/ThirdParty/base64/base64.h"
 
 
+
+
 namespace OrthancPlugins
 {
   class ParsedDicomImage::PImpl

@@ -24,6 +24,11 @@
 
 #include <orthanc/OrthancCPlugin.h>
 #include <stdint.h>
+#include <json/value.h>
+
+#include "../Orthanc/Plugins/Samples/GdcmDecoder/GdcmDecoderCache.h"
+#include "../Orthanc/Plugins/Samples/GdcmDecoder/OrthancImageWrapper.h"
+
 
 namespace OrthancPlugins
 {
@@ -41,7 +46,20 @@ namespace OrthancPlugins
                          std::string& instanceId,
                          const std::string& uri);
 
+    static bool GetCornerstoneMetadata(Json::Value& result,
+                                       const Json::Value& tags,
+                                       OrthancImageWrapper& image);
+
+    static bool EncodeUsingDeflate(Json::Value& result,
+                                   OrthancImageWrapper& image,
+                                   uint8_t compressionLevel  /* between 0 and 9 */);
+
+    static bool EncodeUsingJpeg(Json::Value& result,
+                                OrthancImageWrapper& image,
+                                uint8_t quality /* between 0 and 100 */);
+
     OrthancPluginContext* context_;
+    GdcmDecoderCache  decoderCache_;
 
   public:
     DecodedImageAdapter(OrthancPluginContext* context) : context_(context)
@@ -50,5 +68,10 @@ namespace OrthancPlugins
 
     virtual bool Create(std::string& content,
                         const std::string& uri);  
+
+    GdcmDecoderCache& GetDecoderCache()
+    {
+      return decoderCache_;
+    }
   };
 }

@@ -327,13 +327,19 @@ static OrthancPluginErrorCode DecodeImageCallback(OrthancPluginImage** target,
 {
   try
   {
-#if 1
+    std::auto_ptr<OrthancPlugins::OrthancImageWrapper> image;
+
+#if 0
     // Do not use the cache
     OrthancPlugins::GdcmImageDecoder decoder(dicom, size);
-    *target = decoder.Decode(context_, frameIndex);
+    image.reset(new OrthancPlugins::OrthancImageWrapper(context_, decoder, frameIndex));
 #else
-    *target = cache_.Decode(context_, dicom, size, frameIndex);
+    using namespace OrthancPlugins;
+    ICacheFactory& factory = cache_->GetScheduler().GetFactory(CacheBundle_DecodedImage);
+    image.reset(dynamic_cast<DecodedImageAdapter&>(factory).GetDecoderCache().Decode(context_, dicom, size, frameIndex));
 #endif
+
+    *target = image->Release();
 
     return OrthancPluginErrorCode_Success;
   }
