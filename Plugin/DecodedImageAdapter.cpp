@@ -25,7 +25,6 @@
 #include "../Orthanc/Core/OrthancException.h"
 #include "../Orthanc/Plugins/Samples/GdcmDecoder/OrthancImageWrapper.h"
 #include "../Orthanc/Resources/ThirdParty/base64/base64.h"
-#include "ParsedDicomImage.h"
 #include "ViewerToolbox.h"
 
 #include <boost/lexical_cast.hpp>
@@ -92,7 +91,6 @@ namespace OrthancPlugins
 
     bool ok = false;
 
-#if 1
     Json::Value tags;
     std::string dicom;
     if (!GetStringFromOrthanc(dicom, context_, "/instances/" + instanceId + "/file") ||
@@ -115,22 +113,6 @@ namespace OrthancPlugins
         ok = EncodeUsingJpeg(json, *image, level);
       }
     }   
-
-#else
-
-    ParsedDicomImage image(context_, instanceId);
-
-    Json::Value json;
-
-    if (type == CompressionType_Deflate)
-    {
-      ok = image.EncodeUsingDeflate(json, 9);
-    }
-    else if (type == CompressionType_Jpeg)
-    {
-      ok = image.EncodeUsingJpeg(json, level);
-    }
-#endif
 
     if (ok)
     {

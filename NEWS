@@ -9,7 +9,6 @@ Pending changes in the mainline
 TODO : Remove any dependency on GDCM in "Plugin"
 TODO : Use "/series/ordered-slices"
 TODO : Support cine and multi-frame images
-TODO : Remove class "ParsedDicomFile"
 TODO : Interpolation does not work at least with Firefox
 
 
