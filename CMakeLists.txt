@@ -152,10 +152,7 @@ set(CORE_SOURCES
   ${CMAKE_SOURCE_DIR}/Plugin/Cache/CacheManager.cpp
   ${CMAKE_SOURCE_DIR}/Plugin/Cache/CacheScheduler.cpp
   ${CMAKE_SOURCE_DIR}/Plugin/ViewerToolbox.cpp
-  ${CMAKE_SOURCE_DIR}/Plugin/SeriesVolumeSorter.cpp
   ${CMAKE_SOURCE_DIR}/Plugin/ViewerPrefetchPolicy.cpp
-  ${CMAKE_SOURCE_DIR}/Plugin/InstanceInformation.cpp
-  ${CMAKE_SOURCE_DIR}/Plugin/InstanceInformationAdapter.cpp
   ${CMAKE_SOURCE_DIR}/Plugin/SeriesInformationAdapter.cpp
   )
 

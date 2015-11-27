@@ -27,7 +27,6 @@
 #include "ViewerToolbox.h"
 #include "ViewerPrefetchPolicy.h"
 #include "DecodedImageAdapter.h"
-#include "InstanceInformationAdapter.h"
 #include "SeriesInformationAdapter.h"
 #include "../Orthanc/Plugins/Samples/GdcmDecoder/GdcmImageDecoder.h"
 #include "../Orthanc/Core/Toolbox.h"
@@ -76,10 +75,7 @@ private:
       {
         const std::string& instanceId = dynamic_cast<DynamicString&>(*obj).GetValue();
 
-        // On the reception of a new instance, precompute its spatial position
-        cache->GetScheduler().Prefetch(OrthancPlugins::CacheBundle_InstanceInformation, instanceId);
-     
-        // Indalidate the parent series of the instance
+        // On the reception of a new instance, indalidate the parent series of the instance
         std::string uri = "/instances/" + std::string(instanceId);
         Json::Value instance;
         if (OrthancPlugins::GetJsonFromOrthanc(instance, context_, uri))
@@ -443,15 +439,12 @@ extern "C"
       cache_->GetScheduler().RegisterPolicy(new ViewerPrefetchPolicy(context_));
       cache_->GetScheduler().Register(CacheBundle_SeriesInformation, 
                                       new SeriesInformationAdapter(context_, cache_->GetScheduler()), 1);
-      cache_->GetScheduler().Register(CacheBundle_InstanceInformation, 
-                                      new InstanceInformationAdapter(context_), 1);
       cache_->GetScheduler().Register(CacheBundle_DecodedImage, 
                                       new DecodedImageAdapter(context_), decodingThreads);
 
 
       /* Set the quotas */
       cache_->GetScheduler().SetQuota(CacheBundle_SeriesInformation, 1000, 0);    // Keep info about 1000 series
-      cache_->GetScheduler().SetQuota(CacheBundle_InstanceInformation, 10000, 0); // Keep info about 10,000 instances
       
       message = "Web viewer using a cache of " + boost::lexical_cast<std::string>(cacheSize) + " MB";
       OrthancPluginLogWarning(context_, message.c_str());

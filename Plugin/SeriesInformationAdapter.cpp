@@ -21,9 +21,6 @@
 #include "SeriesInformationAdapter.h"
 
 #include "ViewerToolbox.h"
-#include "SeriesVolumeSorter.h"
-
-#include "../Orthanc/Core/OrthancException.h"
 
 #include <boost/regex.hpp>
 
@@ -69,36 +66,6 @@ namespace OrthancPlugins
         return false;
       }
     }
-
-#if 0
-    result["SortedInstances"] = Json::arrayValue;
-
-    SeriesVolumeSorter sorter;
-    sorter.Reserve(series["Instances"].size());
-
-    for (Json::Value::ArrayIndex i = 0; i < series["Instances"].size(); i++)
-    {
-      const std::string instanceId = series["Instances"][i].asString();
-      std::string tmp;
-
-      if (!cache_.Access(tmp, CacheBundle_InstanceInformation, instanceId))
-      {
-        OrthancPluginLogError(context_, "The cache is corrupted. Delete it to reconstruct it.");
-        throw Orthanc::OrthancException(Orthanc::ErrorCode_CorruptedFile);
-      }
-
-      InstanceInformation instance(tmp);
-      sorter.AddInstance(instanceId, instance);
-    }
-
-    for (size_t i = 0; i < sorter.GetSize(); i++)
-    {
-      result["SortedInstances"].append(sorter.GetInstance(i));
-    }
-
-    std::cout << result.toStyledString();
-
-#endif
 
     content = result.toStyledString();
 
