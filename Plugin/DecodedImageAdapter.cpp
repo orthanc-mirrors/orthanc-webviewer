@@ -33,6 +33,7 @@
 #include <json/writer.h>
 #include <boost/regex.hpp>
 
+
 namespace OrthancPlugins
 {
   bool DecodedImageAdapter::ParseUri(CompressionType& type,
@@ -168,7 +169,7 @@ namespace OrthancPlugins
     {
       try
       {
-        return boost::lexical_cast<float>(tmp);
+        return boost::lexical_cast<float>(Orthanc::Toolbox::StripSpaces(tmp));
       }
       catch (boost::bad_lexical_cast&)
       {
@@ -231,7 +232,7 @@ namespace OrthancPlugins
     }
 
     float slope = GetFloatTag(tags, "0028,1053", 1.0f);
-    float intercept = GetFloatTag(tags, "0028,1052", 1.0f);
+    float intercept = GetFloatTag(tags, "0028,1052", 0.0f);
 
     result["slope"] = slope;
     result["intercept"] = intercept;
@@ -251,8 +252,8 @@ namespace OrthancPlugins
       {
         try
         {
-          result["columnPixelSpacing"] = boost::lexical_cast<float>(tokens[1]);
-          result["rowPixelSpacing"] = boost::lexical_cast<float>(tokens[0]);
+          result["columnPixelSpacing"] = boost::lexical_cast<float>(Orthanc::Toolbox::StripSpaces(tokens[1]));
+          result["rowPixelSpacing"] = boost::lexical_cast<float>(Orthanc::Toolbox::StripSpaces(tokens[0]));
           ok = true;
         }
         catch (boost::bad_lexical_cast&)
