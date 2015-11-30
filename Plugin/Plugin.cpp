@@ -28,7 +28,7 @@
 #include "ViewerPrefetchPolicy.h"
 #include "DecodedImageAdapter.h"
 #include "SeriesInformationAdapter.h"
-#include "../Orthanc/Plugins/Samples/GdcmDecoder/GdcmImageDecoder.h"
+#include "../Orthanc/Plugins/Samples/GdcmDecoder/GdcmDecoderCache.h"
 #include "../Orthanc/Core/Toolbox.h"
 
 
@@ -64,7 +64,7 @@ private:
   Orthanc::SharedMessageQueue  newInstances_;
   bool stop_;
   boost::thread newInstancesThread_;
-
+  OrthancPlugins::GdcmDecoderCache  decoder_;
 
   static void NewInstancesThread(CacheContext* cache)
   {
@@ -122,6 +122,11 @@ public:
   void SignalNewInstance(const char* instanceId)
   {
     newInstances_.Enqueue(new DynamicString(instanceId));
+  }
+
+  OrthancPlugins::GdcmDecoderCache&  GetDecoder()
+  {
+    return decoder_;
   }
 };
 
@@ -333,8 +338,7 @@ static OrthancPluginErrorCode DecodeImageCallback(OrthancPluginImage** target,
     image.reset(new OrthancPlugins::OrthancImageWrapper(context_, decoder, frameIndex));
 #else
     using namespace OrthancPlugins;
-    ICacheFactory& factory = cache_->GetScheduler().GetFactory(CacheBundle_DecodedImage);
-    image.reset(dynamic_cast<DecodedImageAdapter&>(factory).GetDecoderCache().Decode(context_, dicom, size, frameIndex));
+    image.reset(cache_->GetDecoder().Decode(context_, dicom, size, frameIndex));
 #endif
 
     *target = image->Release();

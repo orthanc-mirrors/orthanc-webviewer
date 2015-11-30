@@ -26,7 +26,6 @@
 #include <stdint.h>
 #include <json/value.h>
 
-#include "../Orthanc/Plugins/Samples/GdcmDecoder/GdcmDecoderCache.h"
 #include "../Orthanc/Plugins/Samples/GdcmDecoder/OrthancImageWrapper.h"
 
 
@@ -60,7 +59,6 @@ namespace OrthancPlugins
                                 uint8_t quality /* between 0 and 100 */);
 
     OrthancPluginContext* context_;
-    GdcmDecoderCache  decoderCache_;
 
   public:
     DecodedImageAdapter(OrthancPluginContext* context) : context_(context)
@@ -69,10 +67,5 @@ namespace OrthancPlugins
 
     virtual bool Create(std::string& content,
                         const std::string& uri);  
-
-    GdcmDecoderCache& GetDecoderCache()
-    {
-      return decoderCache_;
-    }
   };
 }

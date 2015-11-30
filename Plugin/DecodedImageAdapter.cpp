@@ -23,6 +23,7 @@
 #include "../Orthanc/Core/Images/ImageBuffer.h"
 #include "../Orthanc/Core/Images/ImageProcessing.h"
 #include "../Orthanc/Core/OrthancException.h"
+#include "../Orthanc/Core/Toolbox.h"
 #include "../Orthanc/Plugins/Samples/GdcmDecoder/OrthancImageWrapper.h"
 #include "../Orthanc/Resources/ThirdParty/base64/base64.h"
 #include "ViewerToolbox.h"
@@ -104,7 +105,7 @@ namespace OrthancPlugins
       throw Orthanc::OrthancException(Orthanc::ErrorCode_UnknownResource);
     }
 
-    std::auto_ptr<OrthancImageWrapper> image(decoderCache_.Decode(context_, dicom.c_str(), dicom.size(), frameIndex));
+    std::auto_ptr<OrthancImageWrapper> image(new OrthancImageWrapper(context_, OrthancPluginDecodeDicomImage(context_, dicom.c_str(), dicom.size(), frameIndex)));
 
     Json::Value json;
     if (GetCornerstoneMetadata(json, tags, *image))
@@ -135,9 +136,9 @@ namespace OrthancPlugins
   }
 
 
-  static bool GetTagValue(std::string& value,
-                          const Json::Value& tags,
-                          const std::string& tag)
+  static bool GetStringTag(std::string& value,
+                           const Json::Value& tags,
+                           const std::string& tag)
   {
     if (tags.type() == Json::objectValue &&
         tags.isMember(tag) &&
@@ -155,6 +156,26 @@ namespace OrthancPlugins
     {
       return false;
     }
+  }
+                                 
+
+  static float GetFloatTag(const Json::Value& tags,
+                           const std::string& tag,
+                           float defaultValue)
+  {
+    std::string tmp;
+    if (GetStringTag(tmp, tags, tag))
+    {
+      try
+      {
+        return boost::lexical_cast<float>(tmp);
+      }
+      catch (boost::bad_lexical_cast&)
+      {
+      }
+    }
+
+    return defaultValue;
   }
                                  
 
@@ -209,33 +230,45 @@ namespace OrthancPlugins
         return false;
     }
 
-    result["slope"] = image.GetSlope();
-    result["intercept"] = image.GetIntercept();
+    float slope = GetFloatTag(tags, "0028,1053", 1.0f);
+    float intercept = GetFloatTag(tags, "0028,1052", 1.0f);
+
+    result["slope"] = slope;
+    result["intercept"] = intercept;
     result["rows"] = image.GetHeight();
     result["columns"] = image.GetWidth();
     result["height"] = image.GetHeight();
     result["width"] = image.GetWidth();
-    result["columnPixelSpacing"] = image.GetColumnPixelSpacing();
-    result["rowPixelSpacing"] = image.GetRowPixelSpacing();
 
-    result["windowCenter"] = windowCenter * image.GetSlope() + image.GetIntercept();
-    result["windowWidth"] = windowWidth * image.GetSlope();
-
-    try
+    bool ok = false;
+    std::string pixelSpacing;
+    if (GetStringTag(pixelSpacing, tags, "0028,0030"))
     {
-      std::string width, center;
-      if (GetTagValue(center, tags, "0028,1050" /*DICOM_TAG_WINDOW_CENTER*/) &&
-          GetTagValue(width, tags, "0028,1051" /*DICOM_TAG_WINDOW_WIDTH*/))
+      std::vector<std::string> tokens;
+      Orthanc::Toolbox::TokenizeString(tokens, pixelSpacing, '\\');
+
+      if (tokens.size() >= 2)
       {
-        float a = boost::lexical_cast<float>(width);
-        float b = boost::lexical_cast<float>(center);
-        result["windowWidth"] = a;
-        result["windowCenter"] = b;
+        try
+        {
+          result["columnPixelSpacing"] = boost::lexical_cast<float>(tokens[1]);
+          result["rowPixelSpacing"] = boost::lexical_cast<float>(tokens[0]);
+          ok = true;
+        }
+        catch (boost::bad_lexical_cast&)
+        {
+        }
       }
     }
-    catch (boost::bad_lexical_cast&)
+
+    if (!ok)
     {
+      result["columnPixelSpacing"] = 1.0f;
+      result["rowPixelSpacing"] = 1.0f;
     }
+
+    result["windowCenter"] = GetFloatTag(tags, "0028,1050", windowCenter * slope + intercept);
+    result["windowWidth"] = GetFloatTag(tags, "0028,1051", windowWidth * slope);
 
     return true;
   }
