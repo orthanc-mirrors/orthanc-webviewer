@@ -57,6 +57,7 @@ FILES = [
     'Core/Uuid.h',
     'Plugins/Samples/Common/ExportedSymbols.list',
     'Plugins/Samples/Common/VersionScript.map',
+    'Plugins/Samples/GdcmDecoder/README',
     'Plugins/Samples/GdcmDecoder/GdcmImageDecoder.h',
     'Plugins/Samples/GdcmDecoder/GdcmImageDecoder.cpp',
     'Plugins/Samples/GdcmDecoder/GdcmDecoderCache.h',
