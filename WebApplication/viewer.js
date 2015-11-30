@@ -324,6 +324,7 @@ function ZoomOut()
         result = image;
       },
       error: function() {
+        alert('Error: This image is not supported by the Web viewer.');
         return null;
       }
     });
@@ -368,6 +369,9 @@ $(document).ready(function() {
                             volume.StudyDescription + '<br/>' +
                             volume.SeriesDescription + '<br/>');
       }
+    },
+    failure: function() {
+      alert('Error: This image is not supported by the Web viewer.');
     }
   });
   
