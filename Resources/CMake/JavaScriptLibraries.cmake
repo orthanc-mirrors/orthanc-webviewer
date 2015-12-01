@@ -19,9 +19,9 @@
 set(BASE_URL "http://www.montefiore.ulg.ac.be/~jodogne/Orthanc/ThirdPartyDownloads/WebViewer")
 
 DownloadPackage(
-  "eef2d2e8c057d33c20ab55fdd06a73c7"
-  "${BASE_URL}/cornerstone-0.7.1.zip"
-  "cornerstone-0.7.1")
+  "3335b0a3ee2bde780777d648cccefe55"
+  "${BASE_URL}/cornerstone-0.8.4.zip"
+  "cornerstone-0.8.4")
 
 DownloadPackage(
   "cb943ac26be9ee755e8741ea232389e2"
@@ -48,8 +48,8 @@ set(JAVASCRIPT_LIBS_DIR  ${CMAKE_CURRENT_BINARY_DIR}/javascript-libs)
 file(MAKE_DIRECTORY ${JAVASCRIPT_LIBS_DIR})
 
 file(COPY
-  ${CMAKE_CURRENT_BINARY_DIR}/cornerstone-0.7.1/dist/cornerstone.min.css
-  ${CMAKE_CURRENT_BINARY_DIR}/cornerstone-0.7.1/dist/cornerstone.min.js
+  ${CMAKE_CURRENT_BINARY_DIR}/cornerstone-0.8.4/dist/cornerstone.min.css
+  ${CMAKE_CURRENT_BINARY_DIR}/cornerstone-0.8.4/dist/cornerstone.min.js
   ${CMAKE_CURRENT_BINARY_DIR}/jquery-ui-1.11.3/external/jquery/jquery.js
   ${CMAKE_CURRENT_BINARY_DIR}/jquery-ui-1.11.3/images
   ${CMAKE_CURRENT_BINARY_DIR}/jquery-ui-1.11.3/jquery-ui.min.css
