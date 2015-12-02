@@ -42,12 +42,12 @@ namespace OrthancPlugins
     Json::Value json;
     Json::Reader reader;
     if (!reader.parse(content, json) ||
-        !json.isMember("SortedInstances"))
+        !json.isMember("Slices"))
     {
       return;
     }
 
-    const Json::Value& instances = json["SortedInstances"];
+    const Json::Value& instances = json["Slices"];
     if (instances.type() != Json::arrayValue)
     {
       return;
@@ -74,7 +74,9 @@ namespace OrthancPlugins
     }
 
     std::string compression = path.substr(0, separator + 1);
-    std::string instanceId = path.substr(separator + 1);
+    std::string instanceAndFrame = path.substr(separator + 1);
+
+    std::string instanceId = instanceAndFrame.substr(0, instanceAndFrame.find('_'));
 
     Json::Value instance;
     if (!GetJsonFromOrthanc(instance, context_, "/instances/" + instanceId) ||
@@ -92,12 +94,13 @@ namespace OrthancPlugins
     Json::Value series;
     Json::Reader reader;
     if (!reader.parse(tmp, series) ||
-        !series.isMember("SortedInstances"))
+        !series.isMember("Slices"))
     {
       return;
     }
 
-    const Json::Value& instances = series["SortedInstances"];
+    const Json::Value& instances = series["Slices"];
+
     if (instances.type() != Json::arrayValue)
     {
       return;
@@ -106,7 +109,7 @@ namespace OrthancPlugins
     Json::Value::ArrayIndex position = 0;
     while (position < instances.size())
     {
-      if (instances[position] == instanceId)
+      if (instances[position] == instanceAndFrame)
       {
         break;
       }

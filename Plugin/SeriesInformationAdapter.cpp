@@ -21,9 +21,8 @@
 #include "SeriesInformationAdapter.h"
 
 #include "ViewerToolbox.h"
-#include "SeriesVolumeSorter.h"
 
-#include "../Orthanc/Core/OrthancException.h"
+#include <boost/regex.hpp>
 
 namespace OrthancPlugins
 {
@@ -33,10 +32,11 @@ namespace OrthancPlugins
     std::string message = "Ordering instances of series: " + seriesId;
     OrthancPluginLogInfo(context_, message.c_str());
 
-    Json::Value series, study, patient;
+    Json::Value series, study, patient, ordered;
     if (!GetJsonFromOrthanc(series, context_, "/series/" + seriesId) ||
         !GetJsonFromOrthanc(study, context_, "/studies/" + series["ID"].asString() + "/module?simplify") ||
         !GetJsonFromOrthanc(patient, context_, "/studies/" + series["ID"].asString() + "/module-patient?simplify") ||
+        !GetJsonFromOrthanc(ordered, context_, "/series/" + series["ID"].asString() + "/ordered-slices") ||
         !series.isMember("Instances") ||
         series["Instances"].type() != Json::arrayValue)
     {
@@ -49,29 +49,22 @@ namespace OrthancPlugins
     result["StudyDescription"] = study["StudyDescription"].asString();
     result["PatientID"] = patient["PatientID"].asString();
     result["PatientName"] = patient["PatientName"].asString();
-    result["SortedInstances"] = Json::arrayValue;
+    result["Type"] = ordered["Type"];
+    result["Slices"] = ordered["Slices"];
 
-    SeriesVolumeSorter sorter;
-    sorter.Reserve(series["Instances"].size());
+    boost::regex pattern("^/instances/([a-f0-9-]+)/frames/([0-9]+)$");
 
-    for (Json::Value::ArrayIndex i = 0; i < series["Instances"].size(); i++)
+    for (Json::Value::ArrayIndex i = 0; i < result["Slices"].size(); i++)
     {
-      const std::string instanceId = series["Instances"][i].asString();
-      std::string tmp;
-
-      if (!cache_.Access(tmp, CacheBundle_InstanceInformation, instanceId))
+      boost::cmatch what;
+      if (regex_match(result["Slices"][i].asCString(), what, pattern))
       {
-        OrthancPluginLogError(context_, "The cache is corrupted. Delete it to reconstruct it.");
-        throw Orthanc::OrthancException(Orthanc::ErrorCode_CorruptedFile);
+        result["Slices"][i] = std::string(what[1]) + "_" + std::string(what[2]);
       }
-
-      InstanceInformation instance(tmp);
-      sorter.AddInstance(instanceId, instance);
-    }
-
-    for (size_t i = 0; i < sorter.GetSize(); i++)
-    {
-      result["SortedInstances"].append(sorter.GetInstance(i));
+      else
+      {
+        return false;
+      }
     }
 
     content = result.toStyledString();

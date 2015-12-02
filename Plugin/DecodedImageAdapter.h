@@ -24,6 +24,10 @@
 
 #include <orthanc/OrthancCPlugin.h>
 #include <stdint.h>
+#include <json/value.h>
+
+#include "../Orthanc/Plugins/Samples/GdcmDecoder/OrthancImageWrapper.h"
+
 
 namespace OrthancPlugins
 {
@@ -39,7 +43,20 @@ namespace OrthancPlugins
     static bool ParseUri(CompressionType& type,
                          uint8_t& compressionLevel,
                          std::string& instanceId,
+                         unsigned int& frameIndex,
                          const std::string& uri);
+
+    static bool GetCornerstoneMetadata(Json::Value& result,
+                                       const Json::Value& tags,
+                                       OrthancImageWrapper& image);
+
+    static bool EncodeUsingDeflate(Json::Value& result,
+                                   OrthancImageWrapper& image,
+                                   uint8_t compressionLevel  /* between 0 and 9 */);
+
+    static bool EncodeUsingJpeg(Json::Value& result,
+                                OrthancImageWrapper& image,
+                                uint8_t quality /* between 0 and 100 */);
 
     OrthancPluginContext* context_;
 

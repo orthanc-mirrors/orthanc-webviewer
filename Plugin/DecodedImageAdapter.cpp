@@ -20,29 +20,39 @@
 
 #include "DecodedImageAdapter.h"
 
+#include "../Orthanc/Core/Images/ImageBuffer.h"
+#include "../Orthanc/Core/Images/ImageProcessing.h"
+#include "../Orthanc/Core/OrthancException.h"
+#include "../Orthanc/Core/Toolbox.h"
+#include "../Orthanc/Plugins/Samples/GdcmDecoder/OrthancImageWrapper.h"
+#include "../Orthanc/Resources/ThirdParty/base64/base64.h"
 #include "ViewerToolbox.h"
-#include "ParsedDicomImage.h"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <json/writer.h>
+#include <boost/regex.hpp>
+
 
 namespace OrthancPlugins
 {
   bool DecodedImageAdapter::ParseUri(CompressionType& type,
                                      uint8_t& compressionLevel,
                                      std::string& instanceId,
+                                     unsigned int& frameIndex,
                                      const std::string& uri)
   {
-    size_t separator = uri.find('-');
-    if (separator == std::string::npos &&
-        separator >= 1)
+    boost::regex pattern("^([a-z0-9]+)-([a-z0-9-]+)_([0-9]+)$");
+
+    boost::cmatch what;
+    if (!regex_match(uri.c_str(), what, pattern))
     {
       return false;
     }
-  
-    std::string compression = uri.substr(0, separator);
-    instanceId = uri.substr(separator + 1);
+
+    std::string compression(what[1]);
+    instanceId = what[2];
+    frameIndex = boost::lexical_cast<unsigned int>(what[3]);
 
     if (compression == "deflate")
     {
@@ -78,25 +88,38 @@ namespace OrthancPlugins
     CompressionType type;
     uint8_t level;
     std::string instanceId;
+    unsigned int frameIndex;
     
-    if (!ParseUri(type, level, instanceId, uri))
+    if (!ParseUri(type, level, instanceId, frameIndex, uri))
     {
       return false;
     }
 
-    ParsedDicomImage image(context_, instanceId);
 
-    Json::Value json;
     bool ok = false;
 
-    if (type == CompressionType_Deflate)
+    Json::Value tags;
+    std::string dicom;
+    if (!GetStringFromOrthanc(dicom, context_, "/instances/" + instanceId + "/file") ||
+        !GetJsonFromOrthanc(tags, context_, "/instances/" + instanceId + "/tags"))
     {
-      ok = image.EncodeUsingDeflate(json, 9);
+      throw Orthanc::OrthancException(Orthanc::ErrorCode_UnknownResource);
     }
-    else if (type == CompressionType_Jpeg)
+
+    std::auto_ptr<OrthancImageWrapper> image(new OrthancImageWrapper(context_, OrthancPluginDecodeDicomImage(context_, dicom.c_str(), dicom.size(), frameIndex)));
+
+    Json::Value json;
+    if (GetCornerstoneMetadata(json, tags, *image))
     {
-      ok = image.EncodeUsingJpeg(json, level);
-    }
+      if (type == CompressionType_Deflate)
+      {
+        ok = EncodeUsingDeflate(json, *image, 9);
+      }
+      else if (type == CompressionType_Jpeg)
+      {
+        ok = EncodeUsingJpeg(json, *image, level);
+      }
+    }   
 
     if (ok)
     {
@@ -111,5 +134,302 @@ namespace OrthancPlugins
       OrthancPluginLogWarning(context_, msg);
       return false;
     }
+  }
+
+
+  static bool GetStringTag(std::string& value,
+                           const Json::Value& tags,
+                           const std::string& tag)
+  {
+    if (tags.type() == Json::objectValue &&
+        tags.isMember(tag) &&
+        tags[tag].type() == Json::objectValue &&
+        tags[tag].isMember("Type") &&
+        tags[tag].isMember("Value") &&
+        tags[tag]["Type"].type() == Json::stringValue &&
+        tags[tag]["Value"].type() == Json::stringValue &&
+        tags[tag]["Type"].asString() == "String")
+    {
+      value = tags[tag]["Value"].asString();
+      return true;
+    }        
+    else
+    {
+      return false;
+    }
+  }
+                                 
+
+  static float GetFloatTag(const Json::Value& tags,
+                           const std::string& tag,
+                           float defaultValue)
+  {
+    std::string tmp;
+    if (GetStringTag(tmp, tags, tag))
+    {
+      try
+      {
+        return boost::lexical_cast<float>(Orthanc::Toolbox::StripSpaces(tmp));
+      }
+      catch (boost::bad_lexical_cast&)
+      {
+      }
+    }
+
+    return defaultValue;
+  }
+                                 
+
+
+  bool DecodedImageAdapter::GetCornerstoneMetadata(Json::Value& result,
+                                                   const Json::Value& tags,
+                                                   OrthancImageWrapper& image)
+  {
+    using namespace Orthanc;
+
+    float windowCenter, windowWidth;
+
+    Orthanc::ImageAccessor accessor;
+    accessor.AssignReadOnly(OrthancPlugins::Convert(image.GetFormat()), image.GetWidth(),
+                            image.GetHeight(), image.GetPitch(), image.GetBuffer());
+
+    switch (accessor.GetFormat())
+    {
+      case PixelFormat_Grayscale8:
+      case PixelFormat_Grayscale16:
+      case PixelFormat_SignedGrayscale16:
+      {
+        int64_t a, b;
+        Orthanc::ImageProcessing::GetMinMaxValue(a, b, accessor);
+        result["minPixelValue"] = (a < 0 ? static_cast<int32_t>(a) : 0);
+        result["maxPixelValue"] = (b > 0 ? static_cast<int32_t>(b) : 1);
+        result["color"] = false;
+        
+        windowCenter = static_cast<float>(a + b) / 2.0f;
+        
+        if (a == b)
+        {
+          windowWidth = 256.0f;  // Arbitrary value
+        }
+        else
+        {
+          windowWidth = static_cast<float>(b - a) / 2.0f;
+        }
+
+        break;
+      }
+
+      case PixelFormat_RGB24:
+        result["minPixelValue"] = 0;
+        result["maxPixelValue"] = 255;
+        result["color"] = true;
+        windowCenter = 127.5f;
+        windowWidth = 256.0f;
+        break;
+
+      default:
+        return false;
+    }
+
+    float slope = GetFloatTag(tags, "0028,1053", 1.0f);
+    float intercept = GetFloatTag(tags, "0028,1052", 0.0f);
+
+    result["slope"] = slope;
+    result["intercept"] = intercept;
+    result["rows"] = image.GetHeight();
+    result["columns"] = image.GetWidth();
+    result["height"] = image.GetHeight();
+    result["width"] = image.GetWidth();
+
+    bool ok = false;
+    std::string pixelSpacing;
+    if (GetStringTag(pixelSpacing, tags, "0028,0030"))
+    {
+      std::vector<std::string> tokens;
+      Orthanc::Toolbox::TokenizeString(tokens, pixelSpacing, '\\');
+
+      if (tokens.size() >= 2)
+      {
+        try
+        {
+          result["columnPixelSpacing"] = boost::lexical_cast<float>(Orthanc::Toolbox::StripSpaces(tokens[1]));
+          result["rowPixelSpacing"] = boost::lexical_cast<float>(Orthanc::Toolbox::StripSpaces(tokens[0]));
+          ok = true;
+        }
+        catch (boost::bad_lexical_cast&)
+        {
+        }
+      }
+    }
+
+    if (!ok)
+    {
+      result["columnPixelSpacing"] = 1.0f;
+      result["rowPixelSpacing"] = 1.0f;
+    }
+
+    result["windowCenter"] = GetFloatTag(tags, "0028,1050", windowCenter * slope + intercept);
+    result["windowWidth"] = GetFloatTag(tags, "0028,1051", windowWidth * slope);
+
+    return true;
+  }
+
+
+
+  bool  DecodedImageAdapter::EncodeUsingDeflate(Json::Value& result,
+                                                OrthancImageWrapper& image,
+                                                uint8_t compressionLevel  /* between 0 and 9 */)
+  {
+    Orthanc::ImageAccessor accessor;
+    accessor.AssignReadOnly(OrthancPlugins::Convert(image.GetFormat()), image.GetWidth(),
+                            image.GetHeight(), image.GetPitch(), image.GetBuffer());
+
+    Orthanc::ImageBuffer buffer;
+    buffer.SetMinimalPitchForced(true);
+
+    Orthanc::ImageAccessor converted;
+
+    switch (accessor.GetFormat())
+    {
+      case Orthanc::PixelFormat_RGB24:
+        converted = accessor;
+        break;
+
+      case Orthanc::PixelFormat_Grayscale8:
+      case Orthanc::PixelFormat_Grayscale16:
+        buffer.SetFormat(Orthanc::PixelFormat_SignedGrayscale16);
+        buffer.SetWidth(accessor.GetWidth());
+        buffer.SetHeight(accessor.GetHeight());
+        converted = buffer.GetAccessor();
+        Orthanc::ImageProcessing::Convert(converted, accessor);
+        break;
+
+      case Orthanc::PixelFormat_SignedGrayscale16:
+        converted = accessor;
+        break;
+
+      default:
+        // Unsupported pixel format
+        return false;
+    }
+
+    // Sanity check: The pitch must be minimal
+    assert(converted.GetSize() == converted.GetWidth() * converted.GetHeight() * 
+           GetBytesPerPixel(converted.GetFormat()));
+    result["Orthanc"]["Compression"] = "Deflate";
+    result["sizeInBytes"] = converted.GetSize();
+
+    std::string z;
+    CompressUsingDeflate(z, image.GetContext(), converted.GetConstBuffer(), converted.GetSize());
+
+    result["Orthanc"]["PixelData"] = base64_encode(z);  
+
+    return true;
+  }
+
+
+
+  template <typename TargetType, typename SourceType>
+  static void ChangeDynamics(Orthanc::ImageAccessor& target,
+                             const Orthanc::ImageAccessor& source,
+                             SourceType source1, TargetType target1,
+                             SourceType source2, TargetType target2)
+  {
+    if (source.GetWidth() != target.GetWidth() ||
+        source.GetHeight() != target.GetHeight())
+    {
+      throw Orthanc::OrthancException(Orthanc::ErrorCode_IncompatibleImageSize);
+    }
+
+    float scale = static_cast<float>(target2 - target1) / static_cast<float>(source2 - source1);
+    float offset = static_cast<float>(target1) - scale * static_cast<float>(source1);
+
+    const float minValue = static_cast<float>(std::numeric_limits<TargetType>::min());
+    const float maxValue = static_cast<float>(std::numeric_limits<TargetType>::max());
+
+    for (unsigned int y = 0; y < source.GetHeight(); y++)
+    {
+      const SourceType* p = reinterpret_cast<const SourceType*>(source.GetConstRow(y));
+      TargetType* q = reinterpret_cast<TargetType*>(target.GetRow(y));
+
+      for (unsigned int x = 0; x < source.GetWidth(); x++, p++, q++)
+      {
+        float v = (scale * static_cast<float>(*p)) + offset;
+
+        if (v > maxValue)
+        {
+          *q = std::numeric_limits<TargetType>::max();
+        }
+        else if (v < minValue)
+        {
+          *q = std::numeric_limits<TargetType>::min();
+        }
+        else
+        {
+          //*q = static_cast<TargetType>(boost::math::iround(v));
+          
+          // http://stackoverflow.com/a/485546/881731
+          *q = static_cast<TargetType>(floor(v + 0.5f));
+        }
+      }
+    }
+  }
+
+
+  bool  DecodedImageAdapter::EncodeUsingJpeg(Json::Value& result,
+                                             OrthancImageWrapper& image,
+                                             uint8_t quality /* between 0 and 100 */)
+  {
+    Orthanc::ImageAccessor accessor;
+    accessor.AssignReadOnly(OrthancPlugins::Convert(image.GetFormat()), image.GetWidth(),
+                            image.GetHeight(), image.GetPitch(), image.GetBuffer());
+
+    Orthanc::ImageBuffer buffer;
+    buffer.SetMinimalPitchForced(true);
+
+    Orthanc::ImageAccessor converted;
+
+    if (accessor.GetFormat() == Orthanc::PixelFormat_Grayscale8 ||
+        accessor.GetFormat() == Orthanc::PixelFormat_RGB24)
+    {
+      result["Orthanc"]["Stretched"] = false;
+      converted = accessor;
+    }
+    else if (accessor.GetFormat() == Orthanc::PixelFormat_Grayscale16 ||
+             accessor.GetFormat() == Orthanc::PixelFormat_SignedGrayscale16)
+    {
+      result["Orthanc"]["Stretched"] = true;
+      buffer.SetFormat(Orthanc::PixelFormat_Grayscale8);
+      buffer.SetWidth(accessor.GetWidth());
+      buffer.SetHeight(accessor.GetHeight());
+      converted = buffer.GetAccessor();
+
+      int64_t a, b;
+      Orthanc::ImageProcessing::GetMinMaxValue(a, b, accessor);
+      result["Orthanc"]["StretchLow"] = static_cast<int32_t>(a);
+      result["Orthanc"]["StretchHigh"] = static_cast<int32_t>(b);
+
+      if (accessor.GetFormat() == Orthanc::PixelFormat_Grayscale16)
+      {
+        ChangeDynamics<uint8_t, uint16_t>(converted, accessor, a, 0, b, 255);
+      }
+      else
+      {
+        ChangeDynamics<uint8_t, int16_t>(converted, accessor, a, 0, b, 255);
+      }
+    }
+    else
+    {
+      return false;
+    }
+    
+    result["Orthanc"]["Compression"] = "Jpeg";
+    result["sizeInBytes"] = converted.GetSize();
+
+    std::string jpeg;
+    WriteJpegToMemory(jpeg, image.GetContext(), converted, quality);
+
+    result["Orthanc"]["PixelData"] = base64_encode(jpeg);  
+    return true;
   }
 }

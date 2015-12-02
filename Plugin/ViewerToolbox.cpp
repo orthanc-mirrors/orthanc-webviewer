@@ -329,7 +329,7 @@ namespace OrthancPlugins
     OrthancPluginErrorCode code = OrthancPluginCompressJpegImage
       (context, &tmp, Convert(accessor.GetFormat()), 
        accessor.GetWidth(), accessor.GetHeight(), accessor.GetPitch(),
-       accessor.GetBuffer(), quality);
+       accessor.GetConstBuffer(), quality);
 
     if (code != OrthancPluginErrorCode_Success)
     {

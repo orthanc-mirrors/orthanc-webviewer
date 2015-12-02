@@ -324,6 +324,7 @@ function ZoomOut()
         result = image;
       },
       error: function() {
+        alert('Error: This image is not supported by the Web viewer.');
         return null;
       }
     });
@@ -361,13 +362,16 @@ $(document).ready(function() {
     cache: false,
     async: false,
     success: function(volume) {
-      if (volume.SortedInstances.length != 0) {
-        instances = volume.SortedInstances;
+      if (volume.Slices.length != 0) {
+        instances = volume.Slices;
         $('#topright').html(volume.PatientID + '<br/>' +
                             volume.PatientName + '<br/>' +
                             volume.StudyDescription + '<br/>' +
                             volume.SeriesDescription + '<br/>');
       }
+    },
+    failure: function() {
+      alert('Error: This image is not supported by the Web viewer.');
     }
   });
   

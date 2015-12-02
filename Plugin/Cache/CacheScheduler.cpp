@@ -254,6 +254,11 @@ namespace OrthancPlugins
       content.clear();
       return factory_->Create(content, item);
     }
+
+    ICacheFactory& GetFactory()
+    {
+      return *factory_;
+    }
   };
 
 
@@ -401,4 +406,9 @@ namespace OrthancPlugins
     policy_.reset(policy);
   }
 
+
+  ICacheFactory& CacheScheduler::GetFactory(int bundle)
+  {
+    return GetBundleScheduler(bundle).GetFactory();
+  }
 }
