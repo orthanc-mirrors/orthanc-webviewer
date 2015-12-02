@@ -20,7 +20,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project(OrthancWebViewer)
 
-set(ORTHANC_WEBVIEWER_VERSION "mainline")
+set(ORTHANC_WEBVIEWER_VERSION "2.0")
 
 # Parameters of the build
 set(STATIC_BUILD OFF CACHE BOOL "Static build of the third-party libraries (necessary for Windows)")
@@ -59,7 +59,7 @@ include(${CMAKE_SOURCE_DIR}/Resources/CMake/JavaScriptLibraries.cmake)
 
 # Check that the Orthanc SDK headers are available or download them
 if (STATIC_BUILD OR NOT USE_SYSTEM_ORTHANC_SDK)
-  include_directories(${ORTHANC_ROOT}/Sdk-0.9.4)
+  include_directories(${ORTHANC_ROOT}/Sdk-0.9.5)
 else ()
   CHECK_INCLUDE_FILE_CXX(orthanc/OrthancCPlugin.h HAVE_ORTHANC_H)
   if (NOT HAVE_ORTHANC_H)
