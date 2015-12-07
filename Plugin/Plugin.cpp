@@ -345,6 +345,14 @@ static OrthancPluginErrorCode DecodeImageCallback(OrthancPluginImage** target,
 
     return OrthancPluginErrorCode_Success;
   }
+  catch (Orthanc::OrthancException& e)
+  {
+    *target = NULL;
+
+    std::string s = "Cannot decode image using GDCM: " + std::string(e.What());
+    OrthancPluginLogError(context_, s.c_str());
+    return OrthancPluginErrorCode_Plugin;
+  }
   catch (std::runtime_error& e)
   {
     *target = NULL;
