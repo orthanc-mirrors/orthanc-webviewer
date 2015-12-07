@@ -1,6 +1,7 @@
 Pending changes in the mainline
 ===============================
 
+* Automatic clearing of the cache if change in the version of Orthanc or of the plugin
 
 
 Version 2.0 (2015-12-02)
