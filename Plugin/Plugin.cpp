@@ -448,20 +448,60 @@ extern "C"
    
       /* Create the cache */
       cache_ = new CacheContext(cachePath.string());
-      cache_->GetScheduler().RegisterPolicy(new ViewerPrefetchPolicy(context_));
-      cache_->GetScheduler().Register(CacheBundle_SeriesInformation, 
-                                      new SeriesInformationAdapter(context_, cache_->GetScheduler()), 1);
-      cache_->GetScheduler().Register(CacheBundle_DecodedImage, 
-                                      new DecodedImageAdapter(context_), decodingThreads);
+      CacheScheduler& scheduler = cache_->GetScheduler();
+
+
+      /* Look for a change in the versions */
+      std::string orthancVersion("unknown"), webViewerVersion("unknown");
+      bool clear = false;
+      if (!scheduler.LookupProperty(orthancVersion, CacheProperty_OrthancVersion) ||
+          orthancVersion != std::string(context_->orthancVersion))
+      {
+        std::string s = ("The version of Orthanc has changed from \"" + orthancVersion + "\" to \"" + 
+                         std::string(context_->orthancVersion) + "\": The cache of the Web viewer will be cleared");
+        OrthancPluginLogWarning(context_, s.c_str());
+        clear = true;
+      }
+
+      if (!scheduler.LookupProperty(webViewerVersion, CacheProperty_WebViewerVersion) ||
+          webViewerVersion != std::string(ORTHANC_WEBVIEWER_VERSION))
+      {
+        std::string s = ("The version of the Web viewer plugin has changed from \"" + webViewerVersion + "\" to \"" + 
+                         std::string(ORTHANC_WEBVIEWER_VERSION) + "\": The cache of the Web viewer will be cleared");
+        OrthancPluginLogWarning(context_, s.c_str());
+        clear = true;
+      }
+
+
+      /* Clear the cache if needed */
+      if (clear)
+      {
+        OrthancPluginLogWarning(context_, "Clearing the cache of the Web viewer");
+        scheduler.Clear();
+        scheduler.SetProperty(CacheProperty_OrthancVersion, context_->orthancVersion);
+        scheduler.SetProperty(CacheProperty_WebViewerVersion, ORTHANC_WEBVIEWER_VERSION);
+      }
+      else
+      {
+        OrthancPluginLogInfo(context_, "No change in the versions, no need to clear the cache of the Web viewer");
+      }
+
+
+      /* Configure the cache */
+      scheduler.RegisterPolicy(new ViewerPrefetchPolicy(context_));
+      scheduler.Register(CacheBundle_SeriesInformation, 
+                         new SeriesInformationAdapter(context_, scheduler), 1);
+      scheduler.Register(CacheBundle_DecodedImage, 
+                         new DecodedImageAdapter(context_), decodingThreads);
 
 
       /* Set the quotas */
-      cache_->GetScheduler().SetQuota(CacheBundle_SeriesInformation, 1000, 0);    // Keep info about 1000 series
+      scheduler.SetQuota(CacheBundle_SeriesInformation, 1000, 0);    // Keep info about 1000 series
       
       message = "Web viewer using a cache of " + boost::lexical_cast<std::string>(cacheSize) + " MB";
       OrthancPluginLogWarning(context_, message.c_str());
 
-      cache_->GetScheduler().SetQuota(CacheBundle_DecodedImage, 0, static_cast<uint64_t>(cacheSize) * 1024 * 1024);
+      scheduler.SetQuota(CacheBundle_DecodedImage, 0, static_cast<uint64_t>(cacheSize) * 1024 * 1024);
     }
     catch (std::runtime_error& e)
     {

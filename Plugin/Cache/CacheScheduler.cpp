@@ -411,4 +411,27 @@ namespace OrthancPlugins
   {
     return GetBundleScheduler(bundle).GetFactory();
   }
+
+
+  void CacheScheduler::SetProperty(CacheProperty property,
+                   const std::string& value)
+  {
+    boost::mutex::scoped_lock lock(cacheMutex_);
+    cache_.SetProperty(property, value);
+  }
+
+  
+  bool CacheScheduler::LookupProperty(std::string& target,
+                                      CacheProperty property)
+  {
+    boost::mutex::scoped_lock lock(cacheMutex_);
+    return cache_.LookupProperty(target, property);
+  }
+
+
+  void CacheScheduler::Clear()
+  {
+    boost::mutex::scoped_lock lock(cacheMutex_);
+    return cache_.Clear();
+  }
 }

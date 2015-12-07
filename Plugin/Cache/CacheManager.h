@@ -25,6 +25,13 @@
 
 namespace OrthancPlugins
 {
+  enum CacheProperty
+  {
+    CacheProperty_OrthancVersion,
+    CacheProperty_WebViewerVersion
+  };
+
+
   class CacheManager : public boost::noncopyable
   {
   private:
@@ -92,5 +99,10 @@ namespace OrthancPlugins
                const std::string& item,
                const std::string& content);
 
+    void SetProperty(CacheProperty property,
+                     const std::string& value);
+
+    bool LookupProperty(std::string& target,
+                        CacheProperty property);
   };
 }

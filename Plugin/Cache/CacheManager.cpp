@@ -302,6 +302,12 @@ namespace OrthancPlugins
       pimpl_->db_.Execute("CREATE INDEX CacheIndex ON Cache(bundle, item);");
     }
 
+    if (!pimpl_->db_.DoesTableExist("CacheProperties"))
+    {
+      printf("ICI\n");
+      pimpl_->db_.Execute("CREATE TABLE CacheProperties(property INTEGER PRIMARY KEY, value TEXT);");
+    }
+
     // Performance tuning of SQLite with PRAGMAs
     // http://www.sqlite.org/pragma.html
     pimpl_->db_.Execute("PRAGMA SYNCHRONOUS=OFF;");
@@ -588,5 +594,35 @@ namespace OrthancPlugins
 
     ReadBundleStatistics();
     SanityCheck();
+  }
+
+
+  void CacheManager::SetProperty(CacheProperty property,
+                                 const std::string& value)
+  {
+    Orthanc::SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE,
+                                 "INSERT OR REPLACE INTO CacheProperties VALUES(?, ?)");
+    s.BindInt(0, property);
+    s.BindString(1, value);
+    s.Run();
+  }
+
+
+  bool CacheManager::LookupProperty(std::string& target,
+                                    CacheProperty property)
+  {
+    Orthanc::SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, 
+                                 "SELECT value FROM CacheProperties WHERE property=?");
+    s.BindInt(0, property);
+
+    if (!s.Step())
+    {
+      return false;
+    }
+    else
+    {
+      target = s.ColumnString(0);
+      return true;
+    }
   }
 }
