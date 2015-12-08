@@ -304,7 +304,6 @@ namespace OrthancPlugins
 
     if (!pimpl_->db_.DoesTableExist("CacheProperties"))
     {
-      printf("ICI\n");
       pimpl_->db_.Execute("CREATE TABLE CacheProperties(property INTEGER PRIMARY KEY, value TEXT);");
     }
 
