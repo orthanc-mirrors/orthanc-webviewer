@@ -390,16 +390,15 @@ extern "C"
     OrthancPluginSetDescription(context_, "Provides a Web viewer of DICOM series within Orthanc.");
 
 
-    // Replace the default decoder of DICOM images that is built in Orthanc
-    OrthancPluginRegisterDecodeImageCallback(context_, DecodeImageCallback);
-
-
     /* By default, use half of the available processing cores for the decoding of DICOM images */
     int decodingThreads = boost::thread::hardware_concurrency() / 2;
     if (decodingThreads == 0)
     {
       decodingThreads = 1;
     }
+
+    /* By default, use GDCM */
+    bool enableGdcm = true;
 
 
     try
@@ -430,6 +429,12 @@ extern "C"
         cachePath = GetStringValue(configuration["WebViewer"], key, cachePath.string());
         cacheSize = GetIntegerValue(configuration["WebViewer"], "CacheSize", cacheSize);
         decodingThreads = GetIntegerValue(configuration["WebViewer"], "Threads", decodingThreads);
+
+        if (configuration["WebViewer"].isMember("EnableGdcm") &&
+            configuration["WebViewer"]["EnableGdcm"].type() == Json::booleanValue)
+        {
+          enableGdcm = configuration["WebViewer"]["EnableGdcm"].asBool();
+        }
       }
 
       std::string message = ("Web viewer using " + boost::lexical_cast<std::string>(decodingThreads) + 
@@ -512,6 +517,19 @@ extern "C"
     {
       OrthancPluginLogError(context_, e.What());
       return -1;
+    }
+
+
+    /* Configure the DICOM decoder */
+    if (enableGdcm)
+    {
+      // Replace the default decoder of DICOM images that is built in Orthanc
+      OrthancPluginLogWarning(context_, "Using GDCM instead of the DICOM decoder that is built in Orthanc");
+      OrthancPluginRegisterDecodeImageCallback(context_, DecodeImageCallback);
+    }
+    else
+    {
+      OrthancPluginLogWarning(context_, "Using the DICOM decoder that is built in Orthanc (not using GDCM)");
     }
 
 
