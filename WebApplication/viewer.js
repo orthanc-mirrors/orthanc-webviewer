@@ -18,7 +18,9 @@
  **/
 
 
+// Set the default compression
 var compression = 'jpeg95';
+//var compression = 'deflate';
 
 
 // Prevent the access to IE
@@ -233,9 +235,15 @@ function ZoomOut()
         pixels[index++] = s[i + 2];
         pixels[index++] = 255;  // Alpha channel
       }
-    } else {
-      var buf = new ArrayBuffer(s.length * 2); // int16_t
-      pixels = new Int16Array(buf);
+    } else{
+      var buf = new ArrayBuffer(s.length * 2); // uint16_t or int16_t
+
+      if (image.Orthanc.IsSigned) {
+        pixels = new Int16Array(buf);
+      } else {
+        pixels = new Uint16Array(buf);
+      }
+
       var index = 0;
       for (var i = 0, length = s.length; i < length; i += 2) {
         var lower = s[i];
@@ -277,8 +285,14 @@ function ZoomOut()
         pixels[index++] = 255;  // Alpha channel
       }
     } else {
-      var buf = new ArrayBuffer(s.length * 2); // uint8_t
-      pixels = new Int16Array(buf);
+      var buf = new ArrayBuffer(s.length * 2); // uint16_t or int16_t
+
+      if (image.Orthanc.IsSigned) {
+        pixels = new Int16Array(buf);
+      } else {
+        pixels = new Uint16Array(buf);
+      }
+
       var index = 0;
       for (var i = 0, length = s.length; i < length; i++) {
         pixels[index] = s[i];

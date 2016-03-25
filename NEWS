@@ -1,6 +1,8 @@
 Pending changes in the mainline
 ===============================
 
+* Fixed rendering of 16bpp images if values are < 0 or >= 32768
+
 
 Version 2.0 (2015-12-10)
 ========================

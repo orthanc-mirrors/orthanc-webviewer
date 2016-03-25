@@ -297,7 +297,7 @@ namespace OrthancPlugins
 
       case Orthanc::PixelFormat_Grayscale8:
       case Orthanc::PixelFormat_Grayscale16:
-        buffer.SetFormat(Orthanc::PixelFormat_SignedGrayscale16);
+        buffer.SetFormat(Orthanc::PixelFormat_Grayscale16);
         buffer.SetWidth(accessor.GetWidth());
         buffer.SetHeight(accessor.GetHeight());
         converted = buffer.GetAccessor();
@@ -312,6 +312,8 @@ namespace OrthancPlugins
         // Unsupported pixel format
         return false;
     }
+
+    result["Orthanc"]["IsSigned"] = (accessor.GetFormat() == Orthanc::PixelFormat_SignedGrayscale16);
 
     // Sanity check: The pitch must be minimal
     assert(converted.GetSize() == converted.GetWidth() * converted.GetHeight() * 
@@ -423,6 +425,7 @@ namespace OrthancPlugins
       return false;
     }
     
+    result["Orthanc"]["IsSigned"] = (accessor.GetFormat() == Orthanc::PixelFormat_SignedGrayscale16);
     result["Orthanc"]["Compression"] = "Jpeg";
     result["sizeInBytes"] = converted.GetSize();
 
