@@ -3,6 +3,7 @@ Pending changes in the mainline
 
 * Option "EnableGdcm" to replace the built-in decoder of Orthanc with GDCM
 * Fixed rendering of 16bpp images if values are < 0 or >= 32768
+* Decoding of JPEG2000 lossless images with YBR_RCT photometric interpretation
 
 
 Version 2.0 (2015-12-10)

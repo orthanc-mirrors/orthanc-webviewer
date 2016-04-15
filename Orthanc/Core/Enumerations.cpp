@@ -212,10 +212,10 @@ namespace Orthanc
         return "The specified path does not point to a directory";
 
       case ErrorCode_HttpPortInUse:
-        return "The TCP port of the HTTP server is already in use";
+        return "The TCP port of the HTTP server is privileged or already in use";
 
       case ErrorCode_DicomPortInUse:
-        return "The TCP port of the DICOM server is already in use";
+        return "The TCP port of the DICOM server is privileged or already in use";
 
       case ErrorCode_BadHttpStatusInRest:
         return "This HTTP status is not allowed in a REST API";
@@ -711,6 +711,31 @@ namespace Orthanc
 
       case LogLevel_Trace:
         return "TRACE";
+
+      default:
+        throw OrthancException(ErrorCode_ParameterOutOfRange);
+    }
+  }
+
+
+  const char* EnumerationToString(PixelFormat format)
+  {
+    switch (format)
+    {
+      case PixelFormat_RGB24:
+        return "RGB24";
+
+      case PixelFormat_RGBA32:
+        return "RGBA32";
+
+      case PixelFormat_Grayscale8:
+        return "Grayscale (unsigned 8bpp)";
+
+      case PixelFormat_Grayscale16:
+        return "Grayscale (unsigned 16bpp)";
+
+      case PixelFormat_SignedGrayscale16:
+        return "Grayscale (signed 16bpp)";
 
       default:
         throw OrthancException(ErrorCode_ParameterOutOfRange);
