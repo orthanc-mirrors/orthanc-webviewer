@@ -37,6 +37,7 @@
 #include "Toolbox.h"
 
 #include <string.h>
+#include <cassert>
 
 namespace Orthanc
 {
@@ -327,6 +328,9 @@ namespace Orthanc
 
       case ErrorCode_NoWorklistHandler:
         return "No request handler factory for DICOM C-Find Modality SCP";
+
+      case ErrorCode_AlreadyExistingTag:
+        return "Cannot override the value of a tag that already exists";
 
       default:
         if (error >= ErrorCode_START_PLUGINS)
@@ -737,6 +741,9 @@ namespace Orthanc
       case PixelFormat_SignedGrayscale16:
         return "Grayscale (signed 16bpp)";
 
+      case PixelFormat_Float32:
+        return "Grayscale (float 32bpp)";
+
       default:
         throw OrthancException(ErrorCode_ParameterOutOfRange);
     }
@@ -908,6 +915,10 @@ namespace Orthanc
         return 3;
 
       case PixelFormat_RGBA32:
+        return 4;
+
+      case PixelFormat_Float32:
+        assert(sizeof(float) == 4);
         return 4;
 
       default:
