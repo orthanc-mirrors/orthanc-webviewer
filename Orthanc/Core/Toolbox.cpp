@@ -582,12 +582,24 @@ namespace Orthanc
   void Toolbox::DecodeBase64(std::string& result, 
                              const std::string& data)
   {
+    for (size_t i = 0; i < data.length(); i++)
+    {
+      if (!isalnum(data[i]) &&
+          data[i] != '+' &&
+          data[i] != '/' &&
+          data[i] != '=')
+      {
+        // This is not a valid character for a Base64 string
+        throw OrthancException(ErrorCode_BadFileFormat);
+      }
+    }
+
     result = base64_decode(data);
   }
 
 
 #  if BOOST_HAS_REGEX == 1
-  void Toolbox::DecodeDataUriScheme(std::string& mime,
+  bool Toolbox::DecodeDataUriScheme(std::string& mime,
                                     std::string& content,
                                     const std::string& source)
   {
@@ -599,10 +611,11 @@ namespace Orthanc
     {
       mime = what[1];
       DecodeBase64(content, what[2]);
+      return true;
     }
     else
     {
-      throw OrthancException(ErrorCode_BadFileFormat);
+      return false;
     }
   }
 #  endif

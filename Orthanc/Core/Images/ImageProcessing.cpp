@@ -75,9 +75,28 @@ namespace Orthanc
   }
 
 
+  template <typename SourceType>
+  static void ConvertGrayscaleToFloat(ImageAccessor& target,
+                                      const ImageAccessor& source)
+  {
+    assert(sizeof(float) == 4);
+
+    for (unsigned int y = 0; y < source.GetHeight(); y++)
+    {
+      float* t = reinterpret_cast<float*>(target.GetRow(y));
+      const SourceType* s = reinterpret_cast<const SourceType*>(source.GetConstRow(y));
+
+      for (unsigned int x = 0; x < source.GetWidth(); x++, t++, s++)
+      {
+        *t = static_cast<float>(*s);
+      }
+    }
+  }
+
+
   template <typename TargetType>
   static void ConvertColorToGrayscale(ImageAccessor& target,
-                              const ImageAccessor& source)
+                                      const ImageAccessor& source)
   {
     assert(source.GetFormat() == PixelFormat_RGB24);
 
@@ -378,6 +397,27 @@ namespace Orthanc
       return;
     }
 
+    if (target.GetFormat() == PixelFormat_Float32 &&
+        source.GetFormat() == PixelFormat_Grayscale8)
+    {
+      ConvertGrayscaleToFloat<uint8_t>(target, source);
+      return;
+    }
+
+    if (target.GetFormat() == PixelFormat_Float32 &&
+        source.GetFormat() == PixelFormat_Grayscale16)
+    {
+      ConvertGrayscaleToFloat<uint16_t>(target, source);
+      return;
+    }
+
+    if (target.GetFormat() == PixelFormat_Float32 &&
+        source.GetFormat() == PixelFormat_SignedGrayscale16)
+    {
+      ConvertGrayscaleToFloat<int16_t>(target, source);
+      return;
+    }
+
     if (target.GetFormat() == PixelFormat_Grayscale8 &&
         source.GetFormat() == PixelFormat_RGBA32)
     {
@@ -438,6 +478,47 @@ namespace Orthanc
       return;
     }
 
+    if (target.GetFormat() == PixelFormat_RGB24 &&
+        source.GetFormat() == PixelFormat_Grayscale8)
+    {
+      for (unsigned int y = 0; y < source.GetHeight(); y++)
+      {
+        const uint8_t* p = reinterpret_cast<const uint8_t*>(source.GetConstRow(y));
+        uint8_t* q = reinterpret_cast<uint8_t*>(target.GetRow(y));
+        for (unsigned int x = 0; x < source.GetWidth(); x++)
+        {
+          q[0] = *p;
+          q[1] = *p;
+          q[2] = *p;
+          p += 1;
+          q += 3;
+        }
+      }
+
+      return;
+    }
+
+    if (target.GetFormat() == PixelFormat_RGBA32 &&
+        source.GetFormat() == PixelFormat_Grayscale8)
+    {
+      for (unsigned int y = 0; y < source.GetHeight(); y++)
+      {
+        const uint8_t* p = reinterpret_cast<const uint8_t*>(source.GetConstRow(y));
+        uint8_t* q = reinterpret_cast<uint8_t*>(target.GetRow(y));
+        for (unsigned int x = 0; x < source.GetWidth(); x++)
+        {
+          q[0] = *p;
+          q[1] = *p;
+          q[2] = *p;
+          q[3] = 255;
+          p += 1;
+          q += 4;
+        }
+      }
+
+      return;
+    }
+
     throw OrthancException(ErrorCode_NotImplemented);
   }
 
@@ -458,6 +539,11 @@ namespace Orthanc
 
       case PixelFormat_SignedGrayscale16:
         SetInternal<int16_t>(image, value);
+        return;
+
+      case PixelFormat_Float32:
+        assert(sizeof(float) == 4);
+        SetInternal<float>(image, value);
         return;
 
       default:
