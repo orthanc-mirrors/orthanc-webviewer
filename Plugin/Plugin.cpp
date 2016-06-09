@@ -24,6 +24,7 @@
 #include <boost/filesystem.hpp>
 
 #include "../Orthanc/Core/OrthancException.h"
+#include "../Orthanc/Core/DicomFormat/DicomMap.h"
 #include "ViewerToolbox.h"
 #include "ViewerPrefetchPolicy.h"
 #include "DecodedImageAdapter.h"
@@ -33,7 +34,8 @@
 
 
 static OrthancPluginContext* context_ = NULL;
-
+static bool restrictTransferSyntaxes_ = false;
+static std::set<std::string> enabledTransferSyntaxes_;
 
 
 class CacheContext
@@ -323,6 +325,80 @@ static OrthancPluginErrorCode IsStableSeries(OrthancPluginRestOutput* output,
 }
 
 
+
+static bool ExtractTransferSyntax(std::string& transferSyntax,
+                                  const void* dicom,
+                                  const uint32_t size)
+{
+  Orthanc::DicomMap header;
+  if (!Orthanc::DicomMap::ParseDicomMetaInformation(header, reinterpret_cast<const char*>(dicom), size))
+  {
+    return false;
+  }
+
+  const Orthanc::DicomValue* tag = header.TestAndGetValue(0x0002, 0x0010);
+  if (tag == NULL ||
+      tag->IsNull() ||
+      tag->IsBinary())
+  {
+    return false;
+  }
+  else
+  {
+    // Stripping spaces should not be required, as this is a UI value
+    // representation whose stripping is supported by the Orthanc
+    // core, but let's be careful...
+    transferSyntax = Orthanc::Toolbox::StripSpaces(tag->GetContent());
+    return true;
+  }
+}
+
+
+static bool IsTransferSyntaxEnabled(const void* dicom,
+                                    const uint32_t size)
+{
+  std::string formattedSize;
+
+  {
+    char tmp[16];
+    sprintf(tmp, "%0.1fMB", static_cast<float>(size) / (1024.0f * 1024.0f));
+    formattedSize.assign(tmp);
+  }
+
+  if (!restrictTransferSyntaxes_)
+  {
+    std::string s = "Decoding one DICOM instance of " + formattedSize + " using GDCM";
+    OrthancPluginLogInfo(context_, s.c_str());
+    return true;
+  }
+
+  std::string transferSyntax;
+  if (!ExtractTransferSyntax(transferSyntax, dicom, size))
+  {
+    std::string s = ("Cannot extract the transfer syntax of this instance of " + 
+                     formattedSize + ", will use GDCM to decode it");
+    OrthancPluginLogInfo(context_, s.c_str());
+    return true;
+  }
+
+  if (enabledTransferSyntaxes_.find(transferSyntax) != enabledTransferSyntaxes_.end())
+  {
+    // Decoding for this transfer syntax is enabled
+    std::string s = ("Using GDCM to decode this instance of " + 
+                     formattedSize + " with transfer syntax " + transferSyntax);
+    OrthancPluginLogInfo(context_, s.c_str());
+    return true;
+  }
+  else
+  {
+    std::string s = ("Won't use GDCM to decode this instance of " + 
+                     formattedSize + ", as its transfer syntax " + transferSyntax + " is disabled");
+    OrthancPluginLogInfo(context_, s.c_str());
+    return false;
+  }
+}
+
+
 static OrthancPluginErrorCode DecodeImageCallback(OrthancPluginImage** target,
                                                   const void* dicom,
                                                   const uint32_t size,
@@ -330,6 +406,12 @@ static OrthancPluginErrorCode DecodeImageCallback(OrthancPluginImage** target,
 {
   try
   {
+    if (!IsTransferSyntaxEnabled(dicom, size))
+    {
+      *target = NULL;
+      return OrthancPluginErrorCode_Success;
+    }
+
     std::auto_ptr<OrthancPlugins::OrthancImageWrapper> image;
 
 #if 0
@@ -362,6 +444,91 @@ static OrthancPluginErrorCode DecodeImageCallback(OrthancPluginImage** target,
     return OrthancPluginErrorCode_Plugin;
   }
 }
+
+
+void ParseConfiguration(bool& enableGdcm,
+                        int& decodingThreads,
+                        boost::filesystem::path& cachePath,
+                        int& cacheSize)
+{
+  /* Read the configuration of the Web viewer */
+  Json::Value configuration;
+  if (!OrthancPlugins::ReadConfiguration(configuration, context_))
+  {
+    throw Orthanc::OrthancException(Orthanc::ErrorCode_BadFileFormat);    
+  }
+
+  // By default, the cache of the Web viewer is located inside the
+  // "StorageDirectory" of Orthanc
+  cachePath = OrthancPlugins::GetStringValue(configuration, "StorageDirectory", ".");
+  cachePath /= "WebViewerCache";
+
+  static const char* CONFIG_WEB_VIEWER = "WebViewer";
+  if (configuration.isMember(CONFIG_WEB_VIEWER))
+  {
+
+    std::string key = "CachePath";
+    if (!configuration[CONFIG_WEB_VIEWER].isMember(key))
+    {
+      // For backward compatibility with the initial release of the Web viewer
+      key = "Cache";
+    }
+
+    cachePath = OrthancPlugins::GetStringValue(configuration[CONFIG_WEB_VIEWER], key, cachePath.string());
+    cacheSize = OrthancPlugins::GetIntegerValue(configuration[CONFIG_WEB_VIEWER], "CacheSize", cacheSize);
+    decodingThreads = OrthancPlugins::GetIntegerValue(configuration[CONFIG_WEB_VIEWER], "Threads", decodingThreads);
+
+    static const char* CONFIG_ENABLE_GDCM = "EnableGdcm";
+    if (configuration[CONFIG_WEB_VIEWER].isMember(CONFIG_ENABLE_GDCM))
+    {
+      if (configuration[CONFIG_WEB_VIEWER][CONFIG_ENABLE_GDCM].type() != Json::booleanValue)
+      {
+        throw Orthanc::OrthancException(Orthanc::ErrorCode_BadFileFormat);
+      }
+      else
+      {
+        enableGdcm = configuration[CONFIG_WEB_VIEWER][CONFIG_ENABLE_GDCM].asBool();
+      }
+    }
+
+    static const char* CONFIG_RESTRICT_TRANSFER_SYNTAXES = "RestrictTransferSyntaxes";
+    if (enableGdcm)
+    {
+      if (configuration[CONFIG_WEB_VIEWER].isMember(CONFIG_RESTRICT_TRANSFER_SYNTAXES))
+      {
+        const Json::Value& config = configuration[CONFIG_WEB_VIEWER][CONFIG_RESTRICT_TRANSFER_SYNTAXES];
+
+        if (config.type() != Json::arrayValue)
+        {
+          throw Orthanc::OrthancException(Orthanc::ErrorCode_BadFileFormat);
+        }
+
+        restrictTransferSyntaxes_ = true;
+        for (Json::Value::ArrayIndex i = 0; i < config.size(); i++)
+        {
+          if (config[i].type() != Json::stringValue)
+          {
+            throw Orthanc::OrthancException(Orthanc::ErrorCode_BadFileFormat);
+          }
+          else
+          {
+            std::string s = "Web viewer will use GDCM to decode transfer syntax " + config[i].asString();
+            enabledTransferSyntaxes_.insert(config[i].asString());
+            OrthancPluginLogWarning(context_, s.c_str());
+          }
+        }
+      }
+    }
+  }
+
+  if (decodingThreads <= 0 ||
+      cacheSize <= 0)
+  {
+    throw Orthanc::OrthancException(Orthanc::ErrorCode_ParameterOutOfRange);
+  }
+
+}
+
 
 
 extern "C"
@@ -400,52 +567,17 @@ extern "C"
     /* By default, use GDCM */
     bool enableGdcm = true;
 
+    /* By default, a cache of 100 MB is used */
+    int cacheSize = 100; 
 
     try
     {
-      /* Read the configuration of the Web viewer */
-      Json::Value configuration;
-      if (!ReadConfiguration(configuration, context))
-      {
-        OrthancPluginLogError(context_, "Unable to read the configuration file of Orthanc");
-        return -1;
-      }
-
-      // By default, the cache of the Web viewer is located inside the
-      // "StorageDirectory" of Orthanc
-      boost::filesystem::path cachePath = GetStringValue(configuration, "StorageDirectory", ".");
-      cachePath /= "WebViewerCache";
-      int cacheSize = 100;  // By default, a cache of 100 MB is used
-
-      if (configuration.isMember("WebViewer"))
-      {
-        std::string key = "CachePath";
-        if (!configuration["WebViewer"].isMember(key))
-        {
-          // For backward compatibility with the initial release of the Web viewer
-          key = "Cache";
-        }
-
-        cachePath = GetStringValue(configuration["WebViewer"], key, cachePath.string());
-        cacheSize = GetIntegerValue(configuration["WebViewer"], "CacheSize", cacheSize);
-        decodingThreads = GetIntegerValue(configuration["WebViewer"], "Threads", decodingThreads);
-
-        if (configuration["WebViewer"].isMember("EnableGdcm") &&
-            configuration["WebViewer"]["EnableGdcm"].type() == Json::booleanValue)
-        {
-          enableGdcm = configuration["WebViewer"]["EnableGdcm"].asBool();
-        }
-      }
+      boost::filesystem::path cachePath;
+      ParseConfiguration(enableGdcm, decodingThreads, cachePath, cacheSize);
 
       std::string message = ("Web viewer using " + boost::lexical_cast<std::string>(decodingThreads) + 
                              " threads for the decoding of the DICOM images");
       OrthancPluginLogWarning(context_, message.c_str());
-
-      if (decodingThreads <= 0 ||
-          cacheSize <= 0)
-      {
-        throw Orthanc::OrthancException(Orthanc::ErrorCode_ParameterOutOfRange);
-      }
 
       message = "Storing the cache of the Web viewer in folder: " + cachePath.string();
       OrthancPluginLogWarning(context_, message.c_str());
@@ -515,7 +647,14 @@ extern "C"
     }
     catch (Orthanc::OrthancException& e)
     {
-      OrthancPluginLogError(context_, e.What());
+      if (e.GetErrorCode() == Orthanc::ErrorCode_BadFileFormat)
+      {
+        OrthancPluginLogError(context_, "Unable to read the configuration of the Web viewer plugin");
+      }
+      else
+      {
+        OrthancPluginLogError(context_, e.What());
+      }
       return -1;
     }
 

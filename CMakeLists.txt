@@ -147,6 +147,9 @@ set(CORE_SOURCES
   ${CMAKE_SOURCE_DIR}/Orthanc/Core/SQLite/Transaction.cpp
   ${CMAKE_SOURCE_DIR}/Orthanc/Core/Toolbox.cpp
   ${CMAKE_SOURCE_DIR}/Orthanc/Core/Uuid.cpp
+  ${CMAKE_SOURCE_DIR}/Orthanc/Core/DicomFormat/DicomMap.cpp
+  ${CMAKE_SOURCE_DIR}/Orthanc/Core/DicomFormat/DicomTag.cpp
+  ${CMAKE_SOURCE_DIR}/Orthanc/Core/DicomFormat/DicomValue.cpp
   ${CMAKE_SOURCE_DIR}/Orthanc/Resources/ThirdParty/base64/base64.cpp
 
   ${CMAKE_SOURCE_DIR}/Plugin/Cache/CacheManager.cpp
