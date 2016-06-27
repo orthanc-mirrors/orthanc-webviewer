@@ -7,7 +7,7 @@ Pending changes in the mainline
 * Decoding of JPEG2000 lossless images with YBR_RCT photometric interpretation
 
 
-Version 2.0 (2015-12-10)
+Version 2.1 (2015-12-10)
 ========================
 
 * Automatic clearing of the cache if change in the version of Orthanc or of the plugin
