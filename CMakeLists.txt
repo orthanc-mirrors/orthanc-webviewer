@@ -20,7 +20,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project(OrthancWebViewer)
 
-set(ORTHANC_WEBVIEWER_VERSION "mainline")
+set(ORTHANC_WEBVIEWER_VERSION "2.2")
 
 # Parameters of the build
 set(STATIC_BUILD OFF CACHE BOOL "Static build of the third-party libraries (necessary for Windows)")
