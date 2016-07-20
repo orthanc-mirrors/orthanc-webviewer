@@ -24,10 +24,11 @@ The Web viewer is based upon the following projects:
   http://sourceforge.net/projects/gdcm/
 
 
-Build Instructions
-------------------
+Installation and usage
+----------------------
 
-See: ./Resources/BuildInstructions.txt
+Build and usage instructions are available in the Orthanc Book:
+https://orthanc.chu.ulg.ac.be/book/plugins/webviewer.html
 
 
 Licensing
