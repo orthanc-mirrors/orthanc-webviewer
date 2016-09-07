@@ -57,7 +57,7 @@ include(${CMAKE_SOURCE_DIR}/Resources/CMake/GdcmConfiguration.cmake)
 include(${CMAKE_SOURCE_DIR}/Resources/CMake/JavaScriptLibraries.cmake)
 
 
-# Check that the Orthanc SDK headers are available or download them
+# Check that the Orthanc SDK headers are available
 if (STATIC_BUILD OR NOT USE_SYSTEM_ORTHANC_SDK)
   include_directories(${ORTHANC_ROOT}/Sdk-0.9.5)
 else ()

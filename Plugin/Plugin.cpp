@@ -530,6 +530,14 @@ void ParseConfiguration(bool& enableGdcm,
 }
 
 
+static bool DisplayPerformanceWarning()
+{
+  (void) DisplayPerformanceWarning;   // Disable warning about unused function
+  OrthancPluginLogWarning(context_, "Performance warning in Web viewer: "
+                          "Non-release build, runtime debug assertions are turned on");
+  return true;
+}
+
 
 extern "C"
 {
@@ -538,6 +546,7 @@ extern "C"
     using namespace OrthancPlugins;
 
     context_ = context;
+    assert(DisplayPerformanceWarning());
     OrthancPluginLogWarning(context_, "Initializing the Web viewer");
 
 
