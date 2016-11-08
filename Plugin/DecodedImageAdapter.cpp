@@ -284,8 +284,7 @@ namespace OrthancPlugins
     accessor.AssignReadOnly(OrthancPlugins::Convert(image.GetFormat()), image.GetWidth(),
                             image.GetHeight(), image.GetPitch(), image.GetBuffer());
 
-    Orthanc::ImageBuffer buffer;
-    buffer.SetMinimalPitchForced(true);
+    std::auto_ptr<Orthanc::ImageBuffer> buffer;
 
     Orthanc::ImageAccessor converted;
 
@@ -297,10 +296,11 @@ namespace OrthancPlugins
 
       case Orthanc::PixelFormat_Grayscale8:
       case Orthanc::PixelFormat_Grayscale16:
-        buffer.SetFormat(Orthanc::PixelFormat_Grayscale16);
-        buffer.SetWidth(accessor.GetWidth());
-        buffer.SetHeight(accessor.GetHeight());
-        converted = buffer.GetAccessor();
+        buffer.reset(new Orthanc::ImageBuffer(Orthanc::PixelFormat_Grayscale16,
+                                              accessor.GetWidth(),
+                                              accessor.GetHeight(),
+                                              true /* force minimal pitch */));
+        converted = buffer->GetAccessor();
         Orthanc::ImageProcessing::Convert(converted, accessor);
         break;
 
@@ -386,8 +386,7 @@ namespace OrthancPlugins
     accessor.AssignReadOnly(OrthancPlugins::Convert(image.GetFormat()), image.GetWidth(),
                             image.GetHeight(), image.GetPitch(), image.GetBuffer());
 
-    Orthanc::ImageBuffer buffer;
-    buffer.SetMinimalPitchForced(true);
+    std::auto_ptr<Orthanc::ImageBuffer> buffer;
 
     Orthanc::ImageAccessor converted;
 
@@ -401,10 +400,12 @@ namespace OrthancPlugins
              accessor.GetFormat() == Orthanc::PixelFormat_SignedGrayscale16)
     {
       result["Orthanc"]["Stretched"] = true;
-      buffer.SetFormat(Orthanc::PixelFormat_Grayscale8);
-      buffer.SetWidth(accessor.GetWidth());
-      buffer.SetHeight(accessor.GetHeight());
-      converted = buffer.GetAccessor();
+
+      buffer.reset(new Orthanc::ImageBuffer(Orthanc::PixelFormat_Grayscale8,
+                                            accessor.GetWidth(),
+                                            accessor.GetHeight(),
+                                            true /* force minimal pitch */));
+      converted = buffer->GetAccessor();
 
       int64_t a, b;
       Orthanc::ImageProcessing::GetMinMaxValue(a, b, accessor);

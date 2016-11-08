@@ -519,6 +519,27 @@ namespace Orthanc
       return;
     }
 
+    if (target.GetFormat() == PixelFormat_BGRA32 &&
+        source.GetFormat() == PixelFormat_RGB24)
+    {
+      for (unsigned int y = 0; y < source.GetHeight(); y++)
+      {
+        const uint8_t* p = reinterpret_cast<const uint8_t*>(source.GetConstRow(y));
+        uint8_t* q = reinterpret_cast<uint8_t*>(target.GetRow(y));
+        for (unsigned int x = 0; x < source.GetWidth(); x++)
+        {
+          q[0] = p[2];
+          q[1] = p[1];
+          q[2] = p[0];
+          q[3] = 255;
+          p += 3;
+          q += 4;
+        }
+      }
+
+      return;
+    }
+
     throw OrthancException(ErrorCode_NotImplemented);
   }
 
@@ -548,6 +569,61 @@ namespace Orthanc
 
       default:
         throw OrthancException(ErrorCode_NotImplemented);
+    }
+  }
+
+
+  void ImageProcessing::Set(ImageAccessor& image,
+                            uint8_t red,
+                            uint8_t green,
+                            uint8_t blue,
+                            uint8_t alpha)
+  {
+    uint8_t p[4];
+    unsigned int size;
+
+    switch (image.GetFormat())
+    {
+      case PixelFormat_RGBA32:
+        p[0] = red;
+        p[1] = green;
+        p[2] = blue;
+        p[3] = alpha;
+        size = 4;
+        break;
+
+      case PixelFormat_BGRA32:
+        p[0] = blue;
+        p[1] = green;
+        p[2] = red;
+        p[3] = alpha;
+        size = 4;
+        break;
+
+      case PixelFormat_RGB24:
+        p[0] = red;
+        p[1] = green;
+        p[2] = blue;
+        size = 3;
+        break;
+
+      default:
+        throw OrthancException(ErrorCode_NotImplemented);
+    }    
+
+    for (unsigned int y = 0; y < image.GetHeight(); y++)
+    {
+      uint8_t* q = reinterpret_cast<uint8_t*>(image.GetRow(y));
+
+      for (unsigned int x = 0; x < image.GetWidth(); x++)
+      {
+        for (unsigned int i = 0; i < size; i++)
+        {
+          q[i] = p[i];
+        }
+
+        q += size;
+      }
     }
   }
 
