@@ -126,6 +126,7 @@ add_definitions(
   -DORTHANC_ENABLE_MD5=0
   -DORTHANC_ENABLE_BASE64=0
   -DORTHANC_ENABLE_LOGGING=0
+  -DORTHANC_SANDBOXED=0
   )
 
 set(CORE_SOURCES
@@ -147,8 +148,8 @@ set(CORE_SOURCES
   ${CMAKE_SOURCE_DIR}/Orthanc/Core/SQLite/StatementId.cpp
   ${CMAKE_SOURCE_DIR}/Orthanc/Core/SQLite/StatementReference.cpp
   ${CMAKE_SOURCE_DIR}/Orthanc/Core/SQLite/Transaction.cpp
+  ${CMAKE_SOURCE_DIR}/Orthanc/Core/SystemToolbox.cpp
   ${CMAKE_SOURCE_DIR}/Orthanc/Core/Toolbox.cpp
-  ${CMAKE_SOURCE_DIR}/Orthanc/Core/Uuid.cpp
   ${CMAKE_SOURCE_DIR}/Orthanc/Core/DicomFormat/DicomMap.cpp
   ${CMAKE_SOURCE_DIR}/Orthanc/Core/DicomFormat/DicomTag.cpp
   ${CMAKE_SOURCE_DIR}/Orthanc/Core/DicomFormat/DicomValue.cpp

@@ -25,7 +25,7 @@ static int argc_;
 static char** argv_;
 
 #include "../Orthanc/Core/OrthancException.h"
-#include "../Orthanc/Core/Toolbox.h"
+#include "../Orthanc/Core/SystemToolbox.h"
 #include "../Plugin/Cache/CacheManager.h"
 #include "../Plugin/Cache/CacheScheduler.h"
 #include "../Plugin/Cache/ICacheFactory.h"
@@ -46,7 +46,7 @@ public:
   {
     storage_.reset(new Orthanc::FilesystemStorage("UnitTestsResults"));
     storage_->Clear();
-    Orthanc::Toolbox::RemoveFile("UnitTestsResults/cache.db");
+    Orthanc::SystemToolbox::RemoveFile("UnitTestsResults/cache.db");
 
     db_.reset(new Orthanc::SQLite::Connection());
     db_->Open("UnitTestsResults/cache.db");

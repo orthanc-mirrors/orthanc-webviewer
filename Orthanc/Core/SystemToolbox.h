@@ -32,55 +32,69 @@
 
 #pragma once
 
+#if !defined(ORTHANC_SANDBOXED)
+#  error The macro ORTHANC_SANDBOXED must be defined
+#endif
+
+#if ORTHANC_SANDBOXED == 1
+#  error The namespace SystemToolbox cannot be used in sandboxed environments
+#endif
+
+#include "Enumerations.h"
+
+#include <vector>
 #include <string>
-
-/**
- * GUID vs. UUID
- * The simple answer is: no difference, they are the same thing. Treat
- * them as a 16 byte (128 bits) value that is used as a unique
- * value. In Microsoft-speak they are called GUIDs, but call them
- * UUIDs when not using Microsoft-speak.
- * http://stackoverflow.com/questions/246930/is-there-any-difference-between-a-guid-and-a-uuid
- **/
-
-#include "Toolbox.h"
+#include <stdint.h>
 
 namespace Orthanc
 {
-  namespace Toolbox
+  namespace SystemToolbox
   {
-    std::string GenerateUuid();
+    ServerBarrierEvent ServerBarrier(const bool& stopFlag);
 
-    bool IsUuid(const std::string& str);
+    ServerBarrierEvent ServerBarrier();
 
-    bool StartsWithUuid(const std::string& str);
+    void ReadFile(std::string& content,
+                  const std::string& path);
 
-    class TemporaryFile
-    {
-    private:
-      std::string path_;
+    bool ReadHeader(std::string& header,
+                    const std::string& path,
+                    size_t headerSize);
 
-    public:
-      TemporaryFile();
+    void WriteFile(const void* content,
+                   size_t size,
+                   const std::string& path);
 
-      TemporaryFile(const char* extension);
+    void WriteFile(const std::string& content,
+                   const std::string& path);
 
-      ~TemporaryFile();
+    void RemoveFile(const std::string& path);
 
-      const std::string& GetPath() const
-      {
-        return path_;
-      }
+    uint64_t GetFileSize(const std::string& path);
 
-      void Write(const std::string& content)
-      {
-        Toolbox::WriteFile(content, path_);
-      }
+    void MakeDirectory(const std::string& path);
 
-      void Read(std::string& content) const
-      {
-        Toolbox::ReadFile(content, path_);
-      }
-    };
+    bool IsExistingFile(const std::string& path);
+
+    std::string GetPathToExecutable();
+
+    std::string GetDirectoryOfExecutable();
+
+    void ExecuteSystemCommand(const std::string& command,
+                              const std::vector<std::string>& arguments);
+
+    int GetProcessId();
+
+    bool IsRegularFile(const std::string& path);
+
+    FILE* OpenFile(const std::string& path,
+                   FileMode mode);
+
+#if BOOST_HAS_DATE_TIME == 1
+    std::string GetNowIsoString();
+
+    void GetNowDicom(std::string& date,
+                     std::string& time);
+#endif
   }
 }
