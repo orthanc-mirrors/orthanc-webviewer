@@ -90,6 +90,7 @@ EmbedResources(
   )
 
 add_definitions(
+  -DORTHANC_ENABLE_PUGIXML=0
   -DORTHANC_SQLITE_STANDALONE=1
   )
 
