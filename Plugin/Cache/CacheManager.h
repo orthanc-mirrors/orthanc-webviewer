@@ -23,6 +23,8 @@
 #include "../../Orthanc/Core/SQLite/Connection.h"
 #include "../../Orthanc/Core/FileStorage/FilesystemStorage.h"
 
+#include <orthanc/OrthancCPlugin.h>
+
 namespace OrthancPlugins
 {
   enum CacheProperty
@@ -69,8 +71,11 @@ namespace OrthancPlugins
 
 
   public:
-    CacheManager(Orthanc::SQLite::Connection& db,
+    CacheManager(OrthancPluginContext* context,
+                 Orthanc::SQLite::Connection& db,
                  Orthanc::FilesystemStorage& storage);
+
+    OrthancPluginContext* GetPluginContext() const;
 
     void SetSanityCheckEnabled(bool enabled);
 

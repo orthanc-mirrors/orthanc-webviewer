@@ -96,7 +96,7 @@ public:
     boost::filesystem::path p(path);
     db_.Open((p / "cache.db").string());
 
-    cache_.reset(new OrthancPlugins::CacheManager(db_, storage_));
+    cache_.reset(new OrthancPlugins::CacheManager(context_, db_, storage_));
     //cache_->SetSanityCheckEnabled(true);  // For debug
 
     scheduler_.reset(new OrthancPlugins::CacheScheduler(*cache_, 100));

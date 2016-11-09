@@ -112,52 +112,65 @@ namespace OrthancPlugins
       {
         std::auto_ptr<DynamicString> prefetch(that->queue_.Dequeue(500));
 
-        if (prefetch.get() != NULL)
+        try
         {
+          if (prefetch.get() != NULL)
           {
-            boost::mutex::scoped_lock lock(that->invalidatedMutex_);
-            that->invalidated_ = false;
-            that->prefetching_ = prefetch->GetValue();
-          }
-
-          {
-            boost::mutex::scoped_lock lock(that->cacheMutex_);
-            if (that->cache_.IsCached(that->bundleIndex_, prefetch->GetValue()))
             {
-              // This item is already cached
+              boost::mutex::scoped_lock lock(that->invalidatedMutex_);
+              that->invalidated_ = false;
+              that->prefetching_ = prefetch->GetValue();
+            }
+
+            {
+              boost::mutex::scoped_lock lock(that->cacheMutex_);
+              if (that->cache_.IsCached(that->bundleIndex_, prefetch->GetValue()))
+              {
+                // This item is already cached
+                continue;
+              }
+            }
+
+            std::string content;
+
+            try
+            {
+              if (!that->factory_.Create(content, prefetch->GetValue()))
+              {
+                // The factory cannot generate this item
+                continue;
+              }
+            }
+            catch (...)
+            {
+              // Exception
               continue;
             }
-          }
 
-          std::string content;
-
-          try
-          {
-            if (!that->factory_.Create(content, prefetch->GetValue()))
             {
-              // The factory cannot generate this item
-              continue;
-            }
-          }
-          catch (...)
-          {
-            // Exception
-            continue;
-          }
-
-          {
-            boost::mutex::scoped_lock lock(that->invalidatedMutex_);
-            if (that->invalidated_)
-            {
-              // This item has been invalidated
-              continue;
-            }
+              boost::mutex::scoped_lock lock(that->invalidatedMutex_);
+              if (that->invalidated_)
+              {
+                // This item has been invalidated
+                continue;
+              }
               
-            {
-              boost::mutex::scoped_lock lock2(that->cacheMutex_);
-              that->cache_.Store(that->bundleIndex_, prefetch->GetValue(), content);
+              {
+                boost::mutex::scoped_lock lock2(that->cacheMutex_);
+                that->cache_.Store(that->bundleIndex_, prefetch->GetValue(), content);
+              }
             }
           }
+        }
+        catch (std::bad_alloc&)
+        {
+          OrthancPluginLogError(that->cache_.GetPluginContext(), 
+                                "Not enough memory for the prefetcher of the Web viewer to work");
+        }
+        catch (...)
+        {
+          OrthancPluginLogError(that->cache_.GetPluginContext(), 
+                                "Unhandled native exception inside the prefetcher of the Web viewer");
         }
       }
     }

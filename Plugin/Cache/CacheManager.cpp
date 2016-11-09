@@ -126,6 +126,7 @@ namespace OrthancPlugins
 
   struct CacheManager::PImpl
   {
+    OrthancPluginContext* context_;
     Orthanc::SQLite::Connection& db_;
     Orthanc::FilesystemStorage& storage_;
 
@@ -134,8 +135,10 @@ namespace OrthancPlugins
     BundleQuota  defaultQuota_;
     BundleQuotas  quotas_;
 
-    PImpl(Orthanc::SQLite::Connection& db,
+    PImpl(OrthancPluginContext* context,
+          Orthanc::SQLite::Connection& db,
           Orthanc::FilesystemStorage& storage) :
+      context_(context),
       db_(db), 
       storage_(storage), 
       sanityCheck_(false)
@@ -278,12 +281,19 @@ namespace OrthancPlugins
 
 
 
-  CacheManager::CacheManager(Orthanc::SQLite::Connection& db,
+  CacheManager::CacheManager(OrthancPluginContext* context,
+                             Orthanc::SQLite::Connection& db,
                              Orthanc::FilesystemStorage& storage) :
-    pimpl_(new PImpl(db, storage))
+    pimpl_(new PImpl(context, db, storage))
   {
     Open();
     ReadBundleStatistics();
+  }
+
+
+  OrthancPluginContext* CacheManager::GetPluginContext() const
+  {
+    return pimpl_->context_;
   }
 
 

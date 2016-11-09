@@ -39,8 +39,7 @@ namespace OrthancPlugins
 
     typedef std::map<int, BundleScheduler*>  BundleSchedulers;
 
-    size_t   maxPrefetchSize_;
-
+    size_t                          maxPrefetchSize_;
     boost::mutex                    cacheMutex_;
     boost::mutex                    factoryMutex_;
     boost::recursive_mutex          policyMutex_;

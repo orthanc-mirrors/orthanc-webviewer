@@ -51,7 +51,7 @@ public:
     db_.reset(new Orthanc::SQLite::Connection());
     db_->Open("UnitTestsResults/cache.db");
 
-    cache_.reset(new CacheManager(*db_, *storage_));
+    cache_.reset(new CacheManager(NULL, *db_, *storage_));
     cache_->SetSanityCheckEnabled(true);
   }
 
