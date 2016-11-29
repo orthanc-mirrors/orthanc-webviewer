@@ -16,7 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-set(BASE_URL "http://www.montefiore.ulg.ac.be/~jodogne/Orthanc/ThirdPartyDownloads/WebViewer")
+set(BASE_URL "http://www.orthanc-server.com/downloads/third-party/WebViewer")
 
 DownloadPackage(
   "3335b0a3ee2bde780777d648cccefe55"
