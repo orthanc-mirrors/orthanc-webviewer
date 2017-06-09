@@ -32,6 +32,7 @@
 #include "SeriesInformationAdapter.h"
 #include "../Orthanc/Plugins/Samples/GdcmDecoder/GdcmDecoderCache.h"
 #include "../Orthanc/Core/Toolbox.h"
+#include "../Orthanc/Core/SystemToolbox.h"
 
 
 static OrthancPluginContext* context_ = NULL;
@@ -226,7 +227,7 @@ static OrthancPluginErrorCode ServeWebViewer(OrthancPluginRestOutput* output,
   std::string s;
   try
   {
-    Orthanc::Toolbox::ReadFile(s, path);
+    Orthanc::SystemToolbox::ReadFile(s, path);
     const char* resource = s.size() ? s.c_str() : NULL;
     OrthancPluginAnswerBuffer(context_, output, resource, s.size(), mime);
   }

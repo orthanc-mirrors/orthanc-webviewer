@@ -37,6 +37,49 @@
 
 namespace OrthancPlugins
 {
+  static bool GetStringTag(std::string& value,
+                           const Json::Value& tags,
+                           const std::string& tag)
+  {
+    if (tags.type() == Json::objectValue &&
+        tags.isMember(tag) &&
+        tags[tag].type() == Json::objectValue &&
+        tags[tag].isMember("Type") &&
+        tags[tag].isMember("Value") &&
+        tags[tag]["Type"].type() == Json::stringValue &&
+        tags[tag]["Value"].type() == Json::stringValue &&
+        tags[tag]["Type"].asString() == "String")
+    {
+      value = tags[tag]["Value"].asString();
+      return true;
+    }        
+    else
+    {
+      return false;
+    }
+  }
+                                 
+
+  static float GetFloatTag(const Json::Value& tags,
+                           const std::string& tag,
+                           float defaultValue)
+  {
+    std::string tmp;
+    if (GetStringTag(tmp, tags, tag))
+    {
+      try
+      {
+        return boost::lexical_cast<float>(Orthanc::Toolbox::StripSpaces(tmp));
+      }
+      catch (boost::bad_lexical_cast&)
+      {
+      }
+    }
+
+    return defaultValue;
+  }
+                                 
+
   bool DecodedImageAdapter::ParseUri(CompressionType& type,
                                      uint8_t& compressionLevel,
                                      std::string& instanceId,
@@ -124,6 +167,12 @@ namespace OrthancPlugins
 
     if (ok)
     {
+      std::string photometric;
+      if (GetStringTag(photometric, tags, "0028,0004"))
+      {
+        json["Orthanc"]["PhotometricInterpretation"] = photometric;
+      }
+      
       Json::FastWriter writer;
       content = writer.write(json);
       return true;
@@ -136,50 +185,6 @@ namespace OrthancPlugins
       return false;
     }
   }
-
-
-  static bool GetStringTag(std::string& value,
-                           const Json::Value& tags,
-                           const std::string& tag)
-  {
-    if (tags.type() == Json::objectValue &&
-        tags.isMember(tag) &&
-        tags[tag].type() == Json::objectValue &&
-        tags[tag].isMember("Type") &&
-        tags[tag].isMember("Value") &&
-        tags[tag]["Type"].type() == Json::stringValue &&
-        tags[tag]["Value"].type() == Json::stringValue &&
-        tags[tag]["Type"].asString() == "String")
-    {
-      value = tags[tag]["Value"].asString();
-      return true;
-    }        
-    else
-    {
-      return false;
-    }
-  }
-                                 
-
-  static float GetFloatTag(const Json::Value& tags,
-                           const std::string& tag,
-                           float defaultValue)
-  {
-    std::string tmp;
-    if (GetStringTag(tmp, tags, tag))
-    {
-      try
-      {
-        return boost::lexical_cast<float>(Orthanc::Toolbox::StripSpaces(tmp));
-      }
-      catch (boost::bad_lexical_cast&)
-      {
-      }
-    }
-
-    return defaultValue;
-  }
-                                 
 
 
   bool DecodedImageAdapter::GetCornerstoneMetadata(Json::Value& result,

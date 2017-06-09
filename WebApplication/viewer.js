@@ -21,6 +21,7 @@
 
 // Set the default compression
 var compression = 'jpeg95';
+var isFirst = true;
 //var compression = 'deflate';
 
 
@@ -325,6 +326,16 @@ function ZoomOut()
         else
           image.render = cornerstone.renderGrayscaleImage;
 
+        if (isFirst) {
+          if (image.Orthanc.PhotometricInterpretation == "MONOCHROME1") {
+            image.invert = true;
+          } else {
+            image.invert = false;
+          }
+
+          isFirst = false;
+        }
+        
         image.getPixelData = function() {
           if (image.Orthanc.Compression == 'Deflate')
             return getPixelDataDeflate(this);
