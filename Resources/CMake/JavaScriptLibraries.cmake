@@ -20,9 +20,9 @@
 set(BASE_URL "http://www.orthanc-server.com/downloads/third-party/WebViewer")
 
 DownloadPackage(
-  "3335b0a3ee2bde780777d648cccefe55"
-  "${BASE_URL}/cornerstone-0.8.4.zip"
-  "cornerstone-0.8.4")
+  "dbf236ede85e7b7871c9a42edad16d81"
+  "${BASE_URL}/cornerstone-0.11.0.zip"
+  "cornerstone-0.11.0")
 
 DownloadPackage(
   "cb943ac26be9ee755e8741ea232389e2"
@@ -49,8 +49,8 @@ set(JAVASCRIPT_LIBS_DIR  ${CMAKE_CURRENT_BINARY_DIR}/javascript-libs)
 file(MAKE_DIRECTORY ${JAVASCRIPT_LIBS_DIR})
 
 file(COPY
-  ${CMAKE_CURRENT_BINARY_DIR}/cornerstone-0.8.4/dist/cornerstone.min.css
-  ${CMAKE_CURRENT_BINARY_DIR}/cornerstone-0.8.4/dist/cornerstone.min.js
+  ${CMAKE_CURRENT_BINARY_DIR}/cornerstone-0.11.0/example/cornerstone.css
+  ${CMAKE_CURRENT_BINARY_DIR}/cornerstone-0.11.0/dist/cornerstone.min.js
   ${CMAKE_CURRENT_BINARY_DIR}/jquery-ui-1.11.3/external/jquery/jquery.js
   ${CMAKE_CURRENT_BINARY_DIR}/jquery-ui-1.11.3/images
   ${CMAKE_CURRENT_BINARY_DIR}/jquery-ui-1.11.3/jquery-ui.min.css
