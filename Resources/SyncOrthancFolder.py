@@ -50,6 +50,7 @@ FILES = [
     'Core/SQLite/ITransaction.h',
     'Core/SQLite/NonCopyable.h',
     'Core/SQLite/OrthancSQLiteException.h',
+    'Core/SQLite/SQLiteTypes.h',
     'Core/SQLite/Statement.cpp',
     'Core/SQLite/Statement.h',
     'Core/SQLite/StatementId.cpp',
