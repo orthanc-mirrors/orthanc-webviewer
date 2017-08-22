@@ -42,6 +42,7 @@ mark_as_advanced(USE_GTEST_DEBIAN_SOURCE_PACKAGE)
 
 set(ORTHANC_ROOT ${CMAKE_SOURCE_DIR}/Orthanc)
 set(ORTHANC_DISABLE_PATCH ON)  # No need for the "patch" command-line tool
+set(ENABLE_LOCALE OFF)         # Disable support for locales (notably in Boost)
 include(CheckIncludeFiles)
 include(CheckIncludeFileCXX)
 include(CheckLibraryExists)
@@ -91,6 +92,7 @@ EmbedResources(
   )
 
 add_definitions(
+  -DORTHANC_ENABLE_LOCALE=0
   -DORTHANC_ENABLE_PUGIXML=0
   -DORTHANC_SQLITE_STANDALONE=1
   )
