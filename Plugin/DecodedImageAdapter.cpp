@@ -157,7 +157,7 @@ namespace OrthancPlugins
     {
       if (type == CompressionType_Deflate)
       {
-        ok = EncodeUsingDeflate(json, *image, 9);
+        ok = EncodeUsingDeflate(json, *image);
       }
       else if (type == CompressionType_Jpeg)
       {
@@ -226,6 +226,7 @@ namespace OrthancPlugins
       }
 
       case PixelFormat_RGB24:
+      case PixelFormat_RGB48:
         result["minPixelValue"] = 0;
         result["maxPixelValue"] = 255;
         result["color"] = true;
@@ -281,10 +282,34 @@ namespace OrthancPlugins
   }
 
 
+  static void ConvertRGB48ToRGB24(Orthanc::ImageAccessor& target,
+                                  const Orthanc::ImageAccessor& source)
+  {
+    if (source.GetWidth() != target.GetWidth() ||
+        source.GetHeight() != target.GetHeight())
+    {
+      throw Orthanc::OrthancException(Orthanc::ErrorCode_IncompatibleImageSize);
+    }
+
+    for (unsigned int y = 0; y < source.GetHeight(); y++)
+    {
+      const uint16_t* p = reinterpret_cast<const uint16_t*>(source.GetConstRow(y));
+      uint8_t* q = reinterpret_cast<uint8_t*>(target.GetRow(y));
+
+      for (unsigned int x = 0; x < source.GetWidth(); x++)
+      {
+        q[0] = p[0] >> 8;
+        q[1] = p[1] >> 8;
+        q[2] = p[2] >> 8;
+        p += 3;
+        q += 3;
+      }
+    }
+  }
+
 
   bool  DecodedImageAdapter::EncodeUsingDeflate(Json::Value& result,
-                                                OrthancImageWrapper& image,
-                                                uint8_t compressionLevel  /* between 0 and 9 */)
+                                                OrthancImageWrapper& image)
   {
     Orthanc::ImageAccessor accessor;
     accessor.AssignReadOnly(OrthancPlugins::Convert(image.GetFormat()), image.GetWidth(),
@@ -298,6 +323,14 @@ namespace OrthancPlugins
     {
       case Orthanc::PixelFormat_RGB24:
         converted = accessor;
+        break;
+
+      case Orthanc::PixelFormat_RGB48:
+        buffer.reset(new Orthanc::ImageBuffer(Orthanc::PixelFormat_RGB24,
+                                              accessor.GetWidth(),
+                                              accessor.GetHeight(), false));
+        converted = buffer->GetAccessor();
+        ConvertRGB48ToRGB24(converted, accessor);
         break;
 
       case Orthanc::PixelFormat_Grayscale8:
@@ -401,6 +434,16 @@ namespace OrthancPlugins
     {
       result["Orthanc"]["Stretched"] = false;
       converted = accessor;
+    }
+    else if (accessor.GetFormat() == Orthanc::PixelFormat_RGB48)
+    {
+      result["Orthanc"]["Stretched"] = false;
+
+      buffer.reset(new Orthanc::ImageBuffer(Orthanc::PixelFormat_RGB24,
+                                            accessor.GetWidth(),
+                                            accessor.GetHeight(), false));
+      converted = buffer->GetAccessor();
+      ConvertRGB48ToRGB24(converted, accessor);
     }
     else if (accessor.GetFormat() == Orthanc::PixelFormat_Grayscale16 ||
              accessor.GetFormat() == Orthanc::PixelFormat_SignedGrayscale16)

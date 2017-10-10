@@ -52,8 +52,7 @@ namespace OrthancPlugins
                                        OrthancImageWrapper& image);
 
     static bool EncodeUsingDeflate(Json::Value& result,
-                                   OrthancImageWrapper& image,
-                                   uint8_t compressionLevel  /* between 0 and 9 */);
+                                   OrthancImageWrapper& image);
 
     static bool EncodeUsingJpeg(Json::Value& result,
                                 OrthancImageWrapper& image,
