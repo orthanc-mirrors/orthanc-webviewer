@@ -206,7 +206,7 @@ namespace OrthancPlugins
       case PixelFormat_SignedGrayscale16:
       {
         int64_t a, b;
-        Orthanc::ImageProcessing::GetMinMaxValue(a, b, accessor);
+        Orthanc::ImageProcessing::GetMinMaxIntegerValue(a, b, accessor);
         result["minPixelValue"] = (a < 0 ? static_cast<int32_t>(a) : 0);
         result["maxPixelValue"] = (b > 0 ? static_cast<int32_t>(b) : 1);
         result["color"] = false;
@@ -414,7 +414,7 @@ namespace OrthancPlugins
       converted = buffer->GetAccessor();
 
       int64_t a, b;
-      Orthanc::ImageProcessing::GetMinMaxValue(a, b, accessor);
+      Orthanc::ImageProcessing::GetMinMaxIntegerValue(a, b, accessor);
       result["Orthanc"]["StretchLow"] = static_cast<int32_t>(a);
       result["Orthanc"]["StretchHigh"] = static_cast<int32_t>(b);
 

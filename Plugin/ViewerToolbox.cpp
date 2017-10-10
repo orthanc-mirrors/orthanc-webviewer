@@ -24,6 +24,9 @@
 #include "../Orthanc/Core/OrthancException.h"
 #include "../Orthanc/Core/Toolbox.h"
 
+// Gain access to ORTHANC_PLUGINS_VERSION_IS_ABOVE if Orthanc SDK <= 1.3.0
+#include "../Orthanc/Plugins/Samples/GdcmDecoder/GdcmImageDecoder.h"
+
 #include <json/reader.h>
 #include <stdexcept>
 #include <boost/lexical_cast.hpp>
@@ -283,6 +286,11 @@ namespace OrthancPlugins
       case Orthanc::PixelFormat_RGB24:
         return OrthancPluginPixelFormat_RGB24;
 
+#if ORTHANC_PLUGINS_VERSION_IS_ABOVE(1, 3, 1)
+      case Orthanc::PixelFormat_RGB48:
+        return OrthancPluginPixelFormat_RGB48;
+#endif
+
       case Orthanc::PixelFormat_RGBA32:
         return OrthancPluginPixelFormat_RGBA32;
 
@@ -307,6 +315,11 @@ namespace OrthancPlugins
 
       case OrthancPluginPixelFormat_RGB24:
         return Orthanc::PixelFormat_RGB24;
+
+#if ORTHANC_PLUGINS_VERSION_IS_ABOVE(1, 3, 1)
+      case OrthancPluginPixelFormat_RGB48:
+        return Orthanc::PixelFormat_RGB48;
+#endif
 
       case OrthancPluginPixelFormat_RGBA32:
         return Orthanc::PixelFormat_RGBA32;

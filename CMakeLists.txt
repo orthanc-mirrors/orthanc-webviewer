@@ -37,8 +37,8 @@ set(USE_SYSTEM_SQLITE ON CACHE BOOL "Use the system version of SQLite")
 set(USE_SYSTEM_ORTHANC_SDK ON CACHE BOOL "Use the system version of the Orthanc plugin SDK")
 
 # Distribution-specific settings
-set(USE_GTEST_DEBIAN_SOURCE_PACKAGE OFF CACHE BOOL "Use the sources of Google Test shipped with libgtest-dev (Debian only)")
-mark_as_advanced(USE_GTEST_DEBIAN_SOURCE_PACKAGE)
+set(USE_GOOGLE_TEST_DEBIAN_PACKAGE OFF CACHE BOOL "Use the sources of Google Test shipped with libgtest-dev (Debian only)")
+mark_as_advanced(USE_GOOGLE_TEST_DEBIAN_PACKAGE)
 
 set(ORTHANC_ROOT ${CMAKE_SOURCE_DIR}/Orthanc)
 set(ORTHANC_DISABLE_PATCH ON)  # No need for the "patch" command-line tool
@@ -92,8 +92,10 @@ EmbedResources(
   )
 
 add_definitions(
+  -DORTHANC_DEFAULT_DICOM_ENCODING=Encoding_Latin1
   -DORTHANC_ENABLE_LOCALE=0
   -DORTHANC_ENABLE_PUGIXML=0
+  -DORTHANC_ENABLE_SQLITE=1
   -DORTHANC_SQLITE_STANDALONE=1
   )
 
@@ -201,7 +203,7 @@ install(
 
 add_executable(UnitTests
   ${CORE_SOURCES}
-  ${GTEST_SOURCES}
+  ${GOOGLE_TEST_SOURCES}
   ${JSONCPP_SOURCES}
   UnitTestsSources/UnitTestsMain.cpp
   )
