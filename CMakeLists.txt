@@ -42,8 +42,13 @@ set(USE_GOOGLE_TEST_DEBIAN_PACKAGE OFF CACHE BOOL "Use the sources of Google Tes
 mark_as_advanced(USE_GOOGLE_TEST_DEBIAN_PACKAGE)
 
 set(ORTHANC_ROOT ${CMAKE_SOURCE_DIR}/Orthanc)
-set(ORTHANC_DISABLE_PATCH ON)  # No need for the "patch" command-line tool
 set(ENABLE_LOCALE OFF)         # Disable support for locales (notably in Boost)
+
+if (NOT "${CMAKE_SYSTEM_VERSION}" STREQUAL "LinuxStandardBase")
+  # The "patch" command-line tool is only needed for Boost and LSB
+  set(ORTHANC_DISABLE_PATCH ON)
+endif()
+
 include(CheckIncludeFile)
 include(CheckIncludeFiles)
 include(CheckIncludeFileCXX)
