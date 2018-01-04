@@ -2,7 +2,7 @@
  * Orthanc - A Lightweight, RESTful DICOM Store
  * Copyright (C) 2012-2016 Sebastien Jodogne, Medical Physics
  * Department, University Hospital of Liege, Belgium
- * Copyright (C) 2017 Osimis, Belgium
+ * Copyright (C) 2017-2018 Osimis S.A., Belgium
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -534,7 +534,7 @@ namespace Orthanc
 
     for (size_t i = 0; i < size; i++, p++)
     {
-      if (*p > 127 || (*p != 0 && iscntrl(*p)))
+      if (*p > 127 || *p == 0 || iscntrl(*p))
       {
         return false;
       }
@@ -543,6 +543,12 @@ namespace Orthanc
     return true;
   }
 
+
+  bool Toolbox::IsAsciiString(const std::string& s)
+  {
+    return IsAsciiString(s.c_str(), s.size());
+  }
+  
 
   std::string Toolbox::ConvertToAscii(const std::string& source)
   {

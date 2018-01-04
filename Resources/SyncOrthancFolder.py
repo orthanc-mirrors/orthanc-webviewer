@@ -79,6 +79,7 @@ FILES = [
     'Resources/CMake/GoogleTestConfiguration.cmake',
     'Resources/CMake/JsonCppConfiguration.cmake',
     'Resources/CMake/SQLiteConfiguration.cmake',
+    'Resources/CMake/UuidConfiguration.cmake',
     'Resources/EmbedResources.py',
     'Resources/MinGW-W64-Toolchain32.cmake',
     'Resources/MinGW-W64-Toolchain64.cmake',

@@ -33,8 +33,9 @@ set(USE_SYSTEM_BOOST ON CACHE BOOL "Use the system version of Boost")
 set(USE_SYSTEM_GDCM ON CACHE BOOL "Use the system version of Grassroot DICOM (GDCM)")
 set(USE_SYSTEM_GOOGLE_TEST ON CACHE BOOL "Use the system version of Google Test")
 set(USE_SYSTEM_JSONCPP ON CACHE BOOL "Use the system version of JsonCpp")
-set(USE_SYSTEM_SQLITE ON CACHE BOOL "Use the system version of SQLite")
 set(USE_SYSTEM_ORTHANC_SDK ON CACHE BOOL "Use the system version of the Orthanc plugin SDK")
+set(USE_SYSTEM_SQLITE ON CACHE BOOL "Use the system version of SQLite")
+set(USE_SYSTEM_UUID ON CACHE BOOL "Use the system version of the uuid library from e2fsprogs")
 
 # Distribution-specific settings
 set(USE_GOOGLE_TEST_DEBIAN_PACKAGE OFF CACHE BOOL "Use the sources of Google Test shipped with libgtest-dev (Debian only)")
@@ -43,6 +44,7 @@ mark_as_advanced(USE_GOOGLE_TEST_DEBIAN_PACKAGE)
 set(ORTHANC_ROOT ${CMAKE_SOURCE_DIR}/Orthanc)
 set(ORTHANC_DISABLE_PATCH ON)  # No need for the "patch" command-line tool
 set(ENABLE_LOCALE OFF)         # Disable support for locales (notably in Boost)
+include(CheckIncludeFile)
 include(CheckIncludeFiles)
 include(CheckIncludeFileCXX)
 include(CheckLibraryExists)
@@ -55,6 +57,7 @@ include(${CMAKE_SOURCE_DIR}/Orthanc/Resources/CMake/BoostConfiguration.cmake)
 include(${CMAKE_SOURCE_DIR}/Orthanc/Resources/CMake/GoogleTestConfiguration.cmake)
 include(${CMAKE_SOURCE_DIR}/Orthanc/Resources/CMake/JsonCppConfiguration.cmake)
 include(${CMAKE_SOURCE_DIR}/Orthanc/Resources/CMake/SQLiteConfiguration.cmake)
+include(${CMAKE_SOURCE_DIR}/Orthanc/Resources/CMake/UuidConfiguration.cmake)
 
 include(${CMAKE_SOURCE_DIR}/Resources/CMake/GdcmConfiguration.cmake)
 include(${CMAKE_SOURCE_DIR}/Resources/CMake/JavaScriptLibraries.cmake)
@@ -136,8 +139,9 @@ add_definitions(
 
 set(CORE_SOURCES
   ${BOOST_SOURCES}
-  ${SQLITE_SOURCES}
   ${JSONCPP_SOURCES}
+  ${SQLITE_SOURCES}
+  ${UUID_SOURCES}
 
   # Sources inherited from Orthanc core
   ${CMAKE_SOURCE_DIR}/Orthanc/Core/ChunkedBuffer.cpp
