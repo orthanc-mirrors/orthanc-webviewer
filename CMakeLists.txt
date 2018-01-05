@@ -216,3 +216,5 @@ add_executable(UnitTests
   ${JSONCPP_SOURCES}
   UnitTestsSources/UnitTestsMain.cpp
   )
+
+target_link_libraries(UnitTests ${GOOGLE_TEST_LIBRARIES})
