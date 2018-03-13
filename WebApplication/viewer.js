@@ -161,7 +161,15 @@ function DownloadInstance(instance)
     iframe.style.display = 'none';
     document.body.appendChild(iframe);
   }
-  iframe.src = '../../instances/' + instance + '/file';
+
+  var id = instance;
+  var pos = instance.indexOf('_');
+  if (pos != -1) {
+    // Remove the frame index (after the underscore)
+    id = id.substring(0, pos);
+  }
+
+  iframe.src = '../../instances/' + id + '/file';
 }
 
 
