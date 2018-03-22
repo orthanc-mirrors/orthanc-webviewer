@@ -15,6 +15,7 @@ PLUGIN_SDK_VERSION = '0.9.5'
 REPOSITORY = 'https://bitbucket.org/sjodogne/orthanc/raw'
 
 FILES = [
+    'NEWS',
     'Core/ChunkedBuffer.cpp',
     'Core/ChunkedBuffer.h',
     'Core/Enumerations.cpp',
@@ -36,6 +37,7 @@ FILES = [
     'Core/Images/ImageBuffer.h',
     'Core/Images/ImageProcessing.cpp',
     'Core/Images/ImageProcessing.h',
+    'Core/Images/PixelTraits.h',
     'Core/Logging.h',
     'Core/MultiThreading/SharedMessageQueue.cpp',
     'Core/MultiThreading/SharedMessageQueue.h',
