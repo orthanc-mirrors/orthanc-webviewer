@@ -82,7 +82,7 @@ FILES = [
     'Resources/CMake/JsonCppConfiguration.cmake',
     'Resources/CMake/SQLiteConfiguration.cmake',
     'Resources/CMake/UuidConfiguration.cmake',
-    'Resources/Patches/boost-1.65.1-linux-standard-base.patch',
+    'Resources/Patches/boost-1.66.0-linux-standard-base.patch',
     'Resources/EmbedResources.py',
     'Resources/MinGW-W64-Toolchain32.cmake',
     'Resources/MinGW-W64-Toolchain64.cmake',
