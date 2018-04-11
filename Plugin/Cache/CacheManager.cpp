@@ -21,7 +21,7 @@
 
 #include "CacheManager.h"
 
-#include "../../Orthanc/Core/SystemToolbox.h"
+#include "../../Orthanc/Core/Toolbox.h"
 #include "../../Orthanc/Core/SQLite/Transaction.h"
 
 #include <boost/lexical_cast.hpp>
@@ -354,7 +354,7 @@ namespace OrthancPlugins
 
     // Store the cached content on the disk
     const char* data = content.size() ? &content[0] : NULL;
-    std::string uuid = SystemToolbox::GenerateUuid();
+    std::string uuid = Toolbox::GenerateUuid();
     pimpl_->storage_.Create(uuid, data, content.size(), Orthanc::FileContentType_Unknown);
 
     bool ok = true;
