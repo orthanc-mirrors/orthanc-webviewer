@@ -21,11 +21,11 @@
 
 #include "ViewerToolbox.h"
 
-#include "../Orthanc/Core/OrthancException.h"
-#include "../Orthanc/Core/Toolbox.h"
+#include <Core/OrthancException.h>
+#include <Core/Toolbox.h>
 
 // Gain access to ORTHANC_PLUGINS_VERSION_IS_ABOVE if Orthanc SDK <= 1.3.0
-#include "../Orthanc/Plugins/Samples/GdcmDecoder/GdcmImageDecoder.h"
+#include <Plugins/Samples/GdcmDecoder/GdcmImageDecoder.h>
 
 #include <json/reader.h>
 #include <stdexcept>

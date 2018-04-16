@@ -27,7 +27,7 @@
 #include <stdint.h>
 #include <json/value.h>
 
-#include "../Orthanc/Plugins/Samples/GdcmDecoder/OrthancImageWrapper.h"
+#include <Plugins/Samples/GdcmDecoder/OrthancImageWrapper.h>
 
 
 namespace OrthancPlugins

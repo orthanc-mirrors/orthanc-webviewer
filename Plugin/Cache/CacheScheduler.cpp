@@ -23,7 +23,7 @@
 
 #include "CacheIndex.h"
 
-#include "../../Orthanc/Core/OrthancException.h"
+#include <Core/OrthancException.h>
 #include <stdio.h>
 
 namespace OrthancPlugins

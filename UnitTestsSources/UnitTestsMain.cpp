@@ -25,12 +25,14 @@
 static int argc_;
 static char** argv_;
 
-#include "../Orthanc/Core/OrthancException.h"
-#include "../Orthanc/Core/SystemToolbox.h"
 #include "../Plugin/Cache/CacheManager.h"
 #include "../Plugin/Cache/CacheScheduler.h"
 #include "../Plugin/Cache/ICacheFactory.h"
 #include "../Plugin/Cache/ICacheFactory.h"
+
+#include <Core/Logging.h>
+#include <Core/OrthancException.h>
+#include <Core/SystemToolbox.h>
 
 using namespace OrthancPlugins;
 
@@ -193,6 +195,9 @@ int main(int argc, char **argv)
   argv_ = argv;  
 
   ::testing::InitGoogleTest(&argc, argv);
+
+  Orthanc::Logging::Initialize();
+  Orthanc::Logging::EnableInfoLevel(true);
 
   return RUN_ALL_TESTS();
 }

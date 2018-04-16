@@ -25,7 +25,7 @@
 #include <json/value.h>
 #include <orthanc/OrthancCPlugin.h>
 
-#include "../Orthanc/Core/Images/ImageAccessor.h"
+#include <Core/Images/ImageAccessor.h>
 
 namespace OrthancPlugins
 {

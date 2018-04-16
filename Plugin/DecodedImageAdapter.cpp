@@ -21,13 +21,14 @@
 
 #include "DecodedImageAdapter.h"
 
-#include "../Orthanc/Core/Images/ImageBuffer.h"
-#include "../Orthanc/Core/Images/ImageProcessing.h"
-#include "../Orthanc/Core/OrthancException.h"
-#include "../Orthanc/Core/Toolbox.h"
-#include "../Orthanc/Plugins/Samples/GdcmDecoder/OrthancImageWrapper.h"
-#include "../Orthanc/Resources/ThirdParty/base64/base64.h"
 #include "ViewerToolbox.h"
+
+#include <Core/Images/ImageBuffer.h>
+#include <Core/Images/ImageProcessing.h>
+#include <Core/OrthancException.h>
+#include <Core/Toolbox.h>
+#include <Plugins/Samples/GdcmDecoder/OrthancImageWrapper.h>
+#include <Resources/ThirdParty/base64/base64.h>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/predicate.hpp>

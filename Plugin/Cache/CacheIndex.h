@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "../../Orthanc/Core/IDynamicObject.h"
+#include <Core/IDynamicObject.h>
 
 #include <string>
 

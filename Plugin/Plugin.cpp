@@ -19,20 +19,21 @@
  **/
 
 
-#include <boost/thread.hpp>
-#include <boost/lexical_cast.hpp>
-#include <EmbeddedResources.h>
-#include <boost/filesystem.hpp>
-
-#include "../Orthanc/Core/OrthancException.h"
-#include "../Orthanc/Core/DicomFormat/DicomMap.h"
 #include "ViewerToolbox.h"
 #include "ViewerPrefetchPolicy.h"
 #include "DecodedImageAdapter.h"
 #include "SeriesInformationAdapter.h"
-#include "../Orthanc/Plugins/Samples/GdcmDecoder/GdcmDecoderCache.h"
-#include "../Orthanc/Core/Toolbox.h"
-#include "../Orthanc/Core/SystemToolbox.h"
+
+#include <Core/DicomFormat/DicomMap.h>
+#include <Core/OrthancException.h>
+#include <Core/SystemToolbox.h>
+#include <Core/Toolbox.h>
+#include <Plugins/Samples/GdcmDecoder/GdcmDecoderCache.h>
+
+#include <boost/thread.hpp>
+#include <boost/lexical_cast.hpp>
+#include <EmbeddedResources.h>
+#include <boost/filesystem.hpp>
 
 
 static OrthancPluginContext* context_ = NULL;
