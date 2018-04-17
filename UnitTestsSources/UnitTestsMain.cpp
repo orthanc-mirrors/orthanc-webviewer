@@ -196,8 +196,8 @@ int main(int argc, char **argv)
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  Orthanc::Logging::Initialize();
-  Orthanc::Logging::EnableInfoLevel(true);
+  /*Orthanc::Logging::Initialize();
+    Orthanc::Logging::EnableInfoLevel(true);*/
 
   return RUN_ALL_TESTS();
 }

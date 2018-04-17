@@ -47,6 +47,8 @@ set(USE_SYSTEM_ORTHANC_SDK ON CACHE BOOL "Use the system version of the Orthanc 
 
 # Download and setup the Orthanc framework
 include(${CMAKE_SOURCE_DIR}/Resources/Orthanc/DownloadOrthancFramework.cmake)
+
+set(ORTHANC_FRAMEWORK_PLUGIN ON)
 include(${ORTHANC_ROOT}/Resources/CMake/OrthancFrameworkParameters.cmake)
 
 set(ENABLE_LOCALE OFF)         # Disable support for locales (notably in Boost)
@@ -119,9 +121,6 @@ if (APPLE)
   SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -framework CoreFoundation")
 endif()
 
-add_definitions(
-  -DORTHANC_SANDBOXED=0
-  )
 
 set(CORE_SOURCES
   ${CMAKE_SOURCE_DIR}/Plugin/Cache/CacheManager.cpp
