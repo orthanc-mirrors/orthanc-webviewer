@@ -23,28 +23,30 @@ project(OrthancWebViewer)
 
 set(ORTHANC_WEBVIEWER_VERSION "mainline")
 
+if (ORTHANC_WEBVIEWER_VERSION STREQUAL "mainline")
+  set(ORTHANC_FRAMEWORK_VERSION "mainline")
+  set(ORTHANC_FRAMEWORK_DEFAULT_SOURCE "hg")
+else()
+  set(ORTHANC_FRAMEWORK_VERSION "1.3.1")
+  set(ORTHANC_FRAMEWORK_DEFAULT_SOURCE "web")
+endif()
+
+
 # Parameters of the build
 set(STATIC_BUILD OFF CACHE BOOL "Static build of the third-party libraries (necessary for Windows)")
-SET(STANDALONE_BUILD ON CACHE BOOL "Standalone build (all the resources are embedded, necessary for releases)")
+set(STANDALONE_BUILD ON CACHE BOOL "Standalone build (all the resources are embedded, necessary for releases)")
 set(ALLOW_DOWNLOADS OFF CACHE BOOL "Allow CMake to download packages")
+set(ORTHANC_FRAMEWORK_SOURCE "${ORTHANC_FRAMEWORK_DEFAULT_SOURCE}" CACHE STRING "Source of the Orthanc source code (can be \"hg\", \"archive\", \"web\" or \"path\")")
+set(ORTHANC_FRAMEWORK_ARCHIVE "" CACHE STRING "Path to the Orthanc archive, if ORTHANC_FRAMEWORK_SOURCE is \"archive\"")
+set(ORTHANC_FRAMEWORK_ROOT "" CACHE STRING "Path to the Orthanc source directory, if ORTHANC_FRAMEWORK_SOURCE is \"path\"")
 
 # Advanced parameters to fine-tune linking against system libraries
 set(USE_SYSTEM_GDCM ON CACHE BOOL "Use the system version of Grassroot DICOM (GDCM)")
 set(USE_SYSTEM_ORTHANC_SDK ON CACHE BOOL "Use the system version of the Orthanc plugin SDK")
 
-# Download the Orthanc framework
-if (ORTHANC_WEBVIEWER_VERSION STREQUAL "mainline")
-  set(ORTHANC_FRAMEWORK_SOURCE "hg")
-  set(ORTHANC_FRAMEWORK_VERSION "mainline")
-else()
-  set(ORTHANC_FRAMEWORK_SOURCE "web")
-  set(ORTHANC_FRAMEWORK_VERSION "1.3.1")
-endif()
 
+# Download and setup the Orthanc framework
 include(${CMAKE_SOURCE_DIR}/Resources/Orthanc/DownloadOrthancFramework.cmake)
-
-
-# Initialize the Orthanc framework
 include(${ORTHANC_ROOT}/Resources/CMake/OrthancFrameworkParameters.cmake)
 
 set(ENABLE_LOCALE OFF)         # Disable support for locales (notably in Boost)
