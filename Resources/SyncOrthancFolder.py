@@ -24,8 +24,6 @@ FILES = [
 
 SDK = [
     'orthanc/OrthancCPlugin.h',
-    'orthanc/OrthancCDatabasePlugin.h',
-    'orthanc/OrthancCppDatabasePlugin.h',
 ]
 
 
