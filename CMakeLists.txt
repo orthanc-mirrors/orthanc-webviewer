@@ -21,7 +21,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project(OrthancWebViewer)
 
-set(ORTHANC_WEBVIEWER_VERSION "2.4")
+set(ORTHANC_WEBVIEWER_VERSION "mainline")
 
 if (ORTHANC_WEBVIEWER_VERSION STREQUAL "mainline")
   set(ORTHANC_FRAMEWORK_VERSION "mainline")
