@@ -1,6 +1,10 @@
 Pending changes in the mainline
 ===============================
 
+
+Version 2.4 (2018-04-23)
+========================
+
 * Disable pinch zoom on mobile devices
 * Fix download of DICOM instance from the toolbox
 * Fix for Osimis issue WVB-319: Some images are not loading in US_MF
