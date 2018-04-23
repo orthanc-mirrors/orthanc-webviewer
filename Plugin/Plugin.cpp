@@ -50,7 +50,7 @@ private:
     std::string  value_;
 
   public:
-    DynamicString(const char* value) : value_(value)
+    explicit DynamicString(const char* value) : value_(value)
     {
     }
     
@@ -94,7 +94,7 @@ private:
 
 
 public:
-  CacheContext(const std::string& path) : storage_(path), stop_(false)
+  explicit CacheContext(const std::string& path) : storage_(path), stop_(false)
   {
     boost::filesystem::path p(path);
     db_.Open((p / "cache.db").string());
@@ -494,9 +494,10 @@ void ParseConfiguration(bool& enableGdcm,
       }
     }
 
-    static const char* CONFIG_RESTRICT_TRANSFER_SYNTAXES = "RestrictTransferSyntaxes";
     if (enableGdcm)
     {
+      static const char* CONFIG_RESTRICT_TRANSFER_SYNTAXES = "RestrictTransferSyntaxes";
+
       if (configuration[CONFIG_WEB_VIEWER].isMember(CONFIG_RESTRICT_TRANSFER_SYNTAXES))
       {
         const Json::Value& config = configuration[CONFIG_WEB_VIEWER][CONFIG_RESTRICT_TRANSFER_SYNTAXES];
@@ -579,11 +580,11 @@ extern "C"
     /* By default, use GDCM */
     bool enableGdcm = true;
 
-    /* By default, a cache of 100 MB is used */
-    int cacheSize = 100; 
-
     try
     {
+      /* By default, a cache of 100 MB is used */
+      int cacheSize = 100; 
+
       boost::filesystem::path cachePath;
       ParseConfiguration(enableGdcm, decodingThreads, cachePath, cacheSize);
 

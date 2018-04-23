@@ -228,7 +228,7 @@ namespace OrthancPlugins
 
     transaction->Commit();
     for (std::list<std::string>::const_iterator
-           it = toRemove.begin(); it != toRemove.end(); it++)
+           it = toRemove.begin(); it != toRemove.end(); ++it)
     {
       pimpl_->storage_.Remove(*it, Orthanc::FileContentType_Unknown);
     }
@@ -357,8 +357,6 @@ namespace OrthancPlugins
     std::string uuid = Toolbox::GenerateUuid();
     pimpl_->storage_.Create(uuid, data, content.size(), Orthanc::FileContentType_Unknown);
 
-    bool ok = true;
-
     // Remove the previous cached value. This might happen if the same
     // item is accessed very quickly twice: Another factory could have
     // been cached a value before the check for existence in Access().
@@ -377,7 +375,6 @@ namespace OrthancPlugins
       }
     }
 
-    if (ok)
     {
       SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "INSERT INTO Cache VALUES(NULL, ?, ?, ?, ?)");
       s.BindInt(0, bundleIndex);
@@ -387,25 +384,20 @@ namespace OrthancPlugins
 
       if (!s.Run())
       {
-        ok = false;
+        // Error: Remove the stored file
+        pimpl_->storage_.Remove(uuid, Orthanc::FileContentType_Unknown);
       }
-    }
-
-    if (!ok)
-    {
-      // Error: Remove the stored file
-      pimpl_->storage_.Remove(uuid, Orthanc::FileContentType_Unknown);
-    }
-    else
-    {
-      transaction->Commit();
-
-      pimpl_->bundles_[bundleIndex] = bundle;
-    
-      for (std::list<std::string>::const_iterator
-             it = toRemove.begin(); it != toRemove.end(); it++)
+      else
       {
-        pimpl_->storage_.Remove(*it, Orthanc::FileContentType_Unknown);
+        transaction->Commit();
+
+        pimpl_->bundles_[bundleIndex] = bundle;
+    
+        for (std::list<std::string>::const_iterator
+               it = toRemove.begin(); it != toRemove.end(); ++it)
+        {
+          pimpl_->storage_.Remove(*it, Orthanc::FileContentType_Unknown);
+        }
       }
     }
 

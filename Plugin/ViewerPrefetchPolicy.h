@@ -42,7 +42,8 @@ namespace OrthancPlugins
                        const std::string& path);
 
   public:
-    ViewerPrefetchPolicy(OrthancPluginContext* context) : context_(context)
+    explicit ViewerPrefetchPolicy(OrthancPluginContext* context) :
+      context_(context)
     {
     }
 

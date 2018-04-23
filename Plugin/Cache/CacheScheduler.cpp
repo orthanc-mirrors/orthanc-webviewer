@@ -34,7 +34,7 @@ namespace OrthancPlugins
     std::string   value_;
 
   public:
-    DynamicString(const std::string& value) : value_(value)
+    explicit DynamicString(const std::string& value) : value_(value)
     {
     }
 
@@ -53,7 +53,7 @@ namespace OrthancPlugins
     std::set<std::string>        content_;
 
   public:
-    PrefetchQueue(size_t maxSize) : queue_(maxSize)
+    explicit PrefetchQueue(size_t maxSize) : queue_(maxSize)
     {
       queue_.SetLifoPolicy();
     }
@@ -305,7 +305,7 @@ namespace OrthancPlugins
   CacheScheduler::~CacheScheduler()
   {
     for (BundleSchedulers::iterator it = bundles_.begin(); 
-         it != bundles_.end(); it++)
+         it != bundles_.end(); ++it)
     {
       delete it->second;
     }

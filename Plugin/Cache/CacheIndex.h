@@ -35,8 +35,8 @@ namespace OrthancPlugins
 
   public:
     CacheIndex(const CacheIndex& other) :
-    bundle_(other.bundle_),
-    item_(other.item_)
+      bundle_(other.bundle_),
+      item_(other.item_)
     {
     }
 

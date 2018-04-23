@@ -61,7 +61,8 @@ namespace OrthancPlugins
     OrthancPluginContext* context_;
 
   public:
-    DecodedImageAdapter(OrthancPluginContext* context) : context_(context)
+    explicit DecodedImageAdapter(OrthancPluginContext* context) :
+      context_(context)
     {
     }
 

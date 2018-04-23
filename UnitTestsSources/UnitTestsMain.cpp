@@ -84,7 +84,7 @@ private:
   int bundle_;
   
 public:
-  TestF(int bundle) : bundle_(bundle)
+  explicit TestF(int bundle) : bundle_(bundle)
   {
   }
 
