@@ -88,6 +88,10 @@ else()
     )
 endif()
 
+add_definitions(
+  -DORTHANC_ENABLE_LOGGING_PLUGIN=1
+  )
+
 EmbedResources(
   ORTHANC_EXPLORER  ${CMAKE_SOURCE_DIR}/Resources/OrthancExplorer.js
   JAVASCRIPT_LIBS   ${JAVASCRIPT_LIBS_DIR}
