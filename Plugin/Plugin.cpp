@@ -614,10 +614,10 @@ extern "C"
       }
 
       if (!scheduler.LookupProperty(webViewerVersion, CacheProperty_WebViewerVersion) ||
-          webViewerVersion != std::string(ORTHANC_WEBVIEWER_VERSION))
+          webViewerVersion != std::string(ORTHANC_PLUGIN_VERSION))
       {
         std::string s = ("The version of the Web viewer plugin has changed from \"" + webViewerVersion + "\" to \"" + 
-                         std::string(ORTHANC_WEBVIEWER_VERSION) + "\": The cache of the Web viewer will be cleared");
+                         std::string(ORTHANC_PLUGIN_VERSION) + "\": The cache of the Web viewer will be cleared");
         OrthancPluginLogWarning(context_, s.c_str());
         clear = true;
       }
@@ -629,7 +629,7 @@ extern "C"
         OrthancPluginLogWarning(context_, "Clearing the cache of the Web viewer");
         scheduler.Clear();
         scheduler.SetProperty(CacheProperty_OrthancVersion, context_->orthancVersion);
-        scheduler.SetProperty(CacheProperty_WebViewerVersion, ORTHANC_WEBVIEWER_VERSION);
+        scheduler.SetProperty(CacheProperty_WebViewerVersion, ORTHANC_PLUGIN_VERSION);
       }
       else
       {
@@ -729,6 +729,6 @@ extern "C"
 
   ORTHANC_PLUGINS_API const char* OrthancPluginGetVersion()
   {
-    return ORTHANC_WEBVIEWER_VERSION;
+    return ORTHANC_PLUGIN_VERSION;
   }
 }
