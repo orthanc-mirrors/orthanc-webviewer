@@ -383,16 +383,12 @@ namespace OrthancPlugins
   }
 
 
-  Orthanc::ImageAccessor ImageReader::GetAccessor() const
+  void ImageReader::GetAccessor(Orthanc::ImageAccessor& target) const
   {
-    Orthanc::ImageAccessor accessor;
-
-    accessor.AssignReadOnly(Convert(OrthancPluginGetImagePixelFormat(context_, image_)),
-                            OrthancPluginGetImageWidth(context_, image_),
-                            OrthancPluginGetImageHeight(context_, image_),
-                            OrthancPluginGetImagePitch(context_, image_),
-                            OrthancPluginGetImageBuffer(context_, image_));
-
-    return accessor;
+    target.AssignReadOnly(Convert(OrthancPluginGetImagePixelFormat(context_, image_)),
+                          OrthancPluginGetImageWidth(context_, image_),
+                          OrthancPluginGetImageHeight(context_, image_),
+                          OrthancPluginGetImagePitch(context_, image_),
+                          OrthancPluginGetImageBuffer(context_, image_));
   }
 }

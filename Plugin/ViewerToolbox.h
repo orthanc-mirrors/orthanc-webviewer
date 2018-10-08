@@ -90,6 +90,6 @@ namespace OrthancPlugins
 
     ~ImageReader();
 
-    Orthanc::ImageAccessor GetAccessor() const;
+    void GetAccessor(Orthanc::ImageAccessor& target) const;
   };
 }
