@@ -22,27 +22,27 @@ set(BASE_URL "http://www.orthanc-server.com/downloads/third-party/WebViewer")
 DownloadPackage(
   "dbf236ede85e7b7871c9a42edad16d81"
   "${BASE_URL}/cornerstone-0.11.0.zip"
-  "cornerstone-0.11.0")
+  "${CMAKE_CURRENT_BINARY_DIR}/cornerstone-0.11.0")
 
 DownloadPackage(
   "cb943ac26be9ee755e8741ea232389e2"
   "${BASE_URL}/jquery-ui-1.11.3.zip"
-  "jquery-ui-1.11.3")
+  "${CMAKE_CURRENT_BINARY_DIR}/jquery-ui-1.11.3")
 
 DownloadPackage(
   "169c56338f9ff812cae3e91ef72bda2e"
   "${BASE_URL}/jsPanel-2.3.3-fixed.zip"
-  "jspanel")
+  "${CMAKE_CURRENT_BINARY_DIR}/jspanel")
 
 DownloadPackage(
   "8392ad105d913c3a83a7787c8f148055"
   "${BASE_URL}/pako-0.2.5.zip"
-  "pako-0.2.5")
+  "${CMAKE_CURRENT_BINARY_DIR}/pako-0.2.5")
 
 DownloadPackage(
   "7ebea0b624cd62445a124d264dfa2a53"
   "${BASE_URL}/js-url-1.8.6.zip"
-  "js-url-1.8.6")
+  "${CMAKE_CURRENT_BINARY_DIR}/js-url-1.8.6")
 
 
 set(JAVASCRIPT_LIBS_DIR  ${CMAKE_CURRENT_BINARY_DIR}/javascript-libs)
