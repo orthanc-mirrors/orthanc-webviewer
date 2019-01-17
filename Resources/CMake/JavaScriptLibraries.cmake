@@ -17,7 +17,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-set(BASE_URL "http://www.orthanc-server.com/downloads/third-party/WebViewer")
+set(BASE_URL "http://orthanc.osimis.io/ThirdPartyDownloads/web-viewer")
 
 DownloadPackage(
   "dbf236ede85e7b7871c9a42edad16d81"
