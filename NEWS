@@ -1,6 +1,10 @@
 Pending changes in the mainline
 ===============================
 
+
+Version 2.5 (2019-02-27)
+========================
+
 * Upgrade to GDCM 2.8.8 for static builds
 * Upgraded Orthanc framework
 
