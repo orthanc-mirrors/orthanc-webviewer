@@ -33,6 +33,8 @@ namespace OrthancPlugins
     int          bundle_;
     std::string  item_;
 
+    void operator= (const CacheIndex&);  // Forbidden
+
   public:
     CacheIndex(const CacheIndex& other) :
       bundle_(other.bundle_),
