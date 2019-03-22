@@ -28,7 +28,6 @@
 #include <Core/OrthancException.h>
 #include <Core/Toolbox.h>
 #include <Plugins/Samples/GdcmDecoder/OrthancImageWrapper.h>
-#include <Resources/ThirdParty/base64/base64.h>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -363,8 +362,10 @@ namespace OrthancPlugins
 
     std::string z;
     CompressUsingDeflate(z, image.GetContext(), converted.GetConstBuffer(), converted.GetSize());
-
-    result["Orthanc"]["PixelData"] = base64_encode(z);  
+    
+    std::string s;
+    Orthanc::Toolbox::EncodeBase64(s, z);
+    result["Orthanc"]["PixelData"] = s;
 
     return true;
   }
@@ -484,7 +485,10 @@ namespace OrthancPlugins
     std::string jpeg;
     WriteJpegToMemory(jpeg, image.GetContext(), converted, quality);
 
-    result["Orthanc"]["PixelData"] = base64_encode(jpeg);  
+    std::string s;
+    Orthanc::Toolbox::EncodeBase64(s, jpeg);
+    result["Orthanc"]["PixelData"] = s;
+    
     return true;
   }
 }
