@@ -23,16 +23,23 @@ if (STATIC_BUILD OR NOT USE_SYSTEM_GDCM)
       ${CMAKE_SYSTEM_NAME} STREQUAL "kFreeBSD")
     # If using gcc, build GDCM with the "-fPIC" argument to allow its
     # embedding into the shared library containing the Orthanc plugin
-    set(AdditionalFlags "-fPIC")
+    set(AdditionalCFlags "-fPIC")
+    set(AdditionalCxxFlags ${AdditionalCFlags})
+  elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Windows" AND
+      CMAKE_COMPILER_IS_GNUCXX)
+    # Prevents error: "jump to label ‘err’ crosses initialization" of some variable
+    # within "Source/Common/gdcmCAPICryptographicMessageSyntax.cxx" if using MinGW
+    set(AdditionalCxxFlags "-fpermissive")
   elseif (${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD")
     # This definition is necessary to compile
     # "Source/MediaStorageAndFileFormat/gdcmFileStreamer.cxx"
-    set(AdditionalFlags "-Doff64_t=off_t") 
+    set(AdditionalCFlags "-Doff64_t=off_t") 
+    set(AdditionalCxxFlags ${AdditionalCFlags})
   endif()
   
   set(Flags
-    "-DCMAKE_C_FLAGS=${CMAKE_C_FLAGS} ${AdditionalFlags}"
-    "-DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} ${AdditionalFlags}"
+    "-DCMAKE_C_FLAGS=${CMAKE_C_FLAGS} ${AdditionalCFlags}"
+    "-DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS} ${AdditionalCxxFlags}"
     -DCMAKE_C_FLAGS_DEBUG=${CMAKE_C_FLAGS_DEBUG}
     -DCMAKE_CXX_FLAGS_DEBUG=${CMAKE_CXX_FLAGS_DEBUG}
     -DCMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
