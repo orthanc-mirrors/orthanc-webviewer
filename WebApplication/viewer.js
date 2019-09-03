@@ -32,6 +32,31 @@ if(navigator.appVersion.indexOf("MSIE ") != -1)
 }
 
 
+function GetAuthorizationTokensFromUrl() {
+  var urlVariables = window.location.search.substring(1).split('&');
+  var dict = {};
+
+  for (var i = 0; i < urlVariables.length; i++) {
+      var split = urlVariables[i].split('=');
+
+      if (split.length == 2 && (split[0] == "token" || split[0] == "auth-token" || split[0] == "authorization")) {
+        dict[split[0]] = split[1];
+      }
+  }
+  return dict;
+};
+
+var authorizationTokens = GetAuthorizationTokensFromUrl();
+
+/* Copy the authoziation toekn from the url search parameters into HTTP headers in every request to the Rest API.  
+Thanks to this behaviour, you may specify a ?token=xxx in your url and this will be passed 
+as the "token" header in every request to the API allowing you to use the authorization plugin */
+$.ajaxSetup(
+  {
+    headers : authorizationTokens
+  }
+);
+
 function ResizeCornerstone()
 {
   $('#dicomImage').height($(window).height() - $('#slider').parent().height());

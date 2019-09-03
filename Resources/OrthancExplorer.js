@@ -11,8 +11,16 @@ $('#series').live('pagebeforecreate', function() {
   b.insertBefore($('#series-delete').parent().parent());
   b.click(function() {
     if ($.mobile.pageData) {
-      var series = $.mobile.pageData.uuid;
-      window.open('../web-viewer/app/viewer.html?series=' + series);
+      var urlSearchParams = {
+        "series" : $.mobile.pageData.uuid
+      };
+      if (authorizationTokens !== undefined) {
+        for (var token in authorizationTokens) {
+          urlSearchParams[token] = authorizationTokens[token];
+        }
+      }
+
+      window.open('../web-viewer/app/viewer.html?' + $.param(urlSearchParams));
     }
   });
 });
