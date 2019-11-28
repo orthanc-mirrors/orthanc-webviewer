@@ -26,6 +26,8 @@
 
 #include <orthanc/OrthancCPlugin.h>
 
+#include <boost/shared_ptr.hpp>
+
 namespace OrthancPlugins
 {
   enum CacheProperty
