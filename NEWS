@@ -4,6 +4,8 @@ Pending changes in the mainline
 * Performance: Replaced "OrthancPluginRegisterRestCallback" by "OrthancPluginRegisterRestCallbackNoLock"
 * Authorization tokens passed as url search params in Orthanc Explorer are now transmitted to the viewer
   and included as headers in every HTTP request to the Rest API easing the usage of the Authorization plugin
+* Upgrade to GDCM 3.0.4 for static builds
+
 
 Version 2.5 (2019-02-27)
 ========================
