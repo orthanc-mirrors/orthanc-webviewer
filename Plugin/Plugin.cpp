@@ -63,8 +63,8 @@ private:
   Orthanc::FilesystemStorage  storage_;
   Orthanc::SQLite::Connection  db_;
 
-  std::auto_ptr<OrthancPlugins::CacheManager>  cache_;
-  std::auto_ptr<OrthancPlugins::CacheScheduler>  scheduler_;
+  std::unique_ptr<OrthancPlugins::CacheManager>  cache_;
+  std::unique_ptr<OrthancPlugins::CacheScheduler>  scheduler_;
 
   Orthanc::SharedMessageQueue  newInstances_;
   bool stop_;
@@ -75,7 +75,7 @@ private:
   {
     while (!cache->stop_)
     {
-      std::auto_ptr<Orthanc::IDynamicObject> obj(cache->newInstances_.Dequeue(100));
+      std::unique_ptr<Orthanc::IDynamicObject> obj(cache->newInstances_.Dequeue(100));
       if (obj.get() != NULL)
       {
         const std::string& instanceId = dynamic_cast<DynamicString&>(*obj).GetValue();
@@ -415,7 +415,7 @@ static OrthancPluginErrorCode DecodeImageCallback(OrthancPluginImage** target,
       return OrthancPluginErrorCode_Success;
     }
 
-    std::auto_ptr<OrthancPlugins::OrthancImageWrapper> image;
+    std::unique_ptr<OrthancPlugins::OrthancImageWrapper> image;
 
 #if 0
     // Do not use the cache

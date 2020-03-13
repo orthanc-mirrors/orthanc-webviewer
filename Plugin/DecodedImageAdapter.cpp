@@ -150,7 +150,9 @@ namespace OrthancPlugins
       throw Orthanc::OrthancException(Orthanc::ErrorCode_UnknownResource);
     }
 
-    std::auto_ptr<OrthancImageWrapper> image(new OrthancImageWrapper(context_, OrthancPluginDecodeDicomImage(context_, dicom.c_str(), dicom.size(), frameIndex)));
+    std::unique_ptr<OrthancImageWrapper> image(
+      new OrthancImageWrapper(context_, OrthancPluginDecodeDicomImage(
+                                context_, dicom.c_str(), dicom.size(), frameIndex)));
 
     Json::Value json;
     if (GetCornerstoneMetadata(json, tags, *image))
@@ -315,7 +317,7 @@ namespace OrthancPlugins
     accessor.AssignReadOnly(OrthancPlugins::Convert(image.GetFormat()), image.GetWidth(),
                             image.GetHeight(), image.GetPitch(), image.GetBuffer());
 
-    std::auto_ptr<Orthanc::ImageBuffer> buffer;
+    std::unique_ptr<Orthanc::ImageBuffer> buffer;
 
     Orthanc::ImageAccessor converted;
 
@@ -427,7 +429,7 @@ namespace OrthancPlugins
     accessor.AssignReadOnly(OrthancPlugins::Convert(image.GetFormat()), image.GetWidth(),
                             image.GetHeight(), image.GetPitch(), image.GetBuffer());
 
-    std::auto_ptr<Orthanc::ImageBuffer> buffer;
+    std::unique_ptr<Orthanc::ImageBuffer> buffer;
 
     Orthanc::ImageAccessor converted;
 
