@@ -36,6 +36,25 @@
 #include <boost/filesystem.hpp>
 
 
+/**
+ * We force the redefinition of the "ORTHANC_PLUGINS_API" macro, that
+ * was left empty with gcc until Orthanc SDK 1.5.7 (no "default"
+ * visibility). This causes the version script, if run from "Holy
+ * Build Box", to make private the 4 global functions of the plugin.
+ **/
+
+#undef ORTHANC_PLUGINS_API
+
+#ifdef WIN32
+#  define ORTHANC_PLUGINS_API __declspec(dllexport)
+#elif __GNUC__ >= 4
+#  define ORTHANC_PLUGINS_API __attribute__ ((visibility ("default")))
+#else
+#  define ORTHANC_PLUGINS_API
+#endif
+
+
+
 static OrthancPluginContext* context_ = NULL;
 static bool restrictTransferSyntaxes_ = false;
 static std::set<std::string> enabledTransferSyntaxes_;
