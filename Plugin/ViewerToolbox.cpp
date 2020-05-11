@@ -25,7 +25,7 @@
 #include <Core/Toolbox.h>
 
 // Gain access to ORTHANC_PLUGINS_VERSION_IS_ABOVE if Orthanc SDK <= 1.3.0
-#include <Plugins/Samples/GdcmDecoder/GdcmImageDecoder.h>
+#include <Plugins/Samples/Common/OrthancPluginCppWrapper.h>
 
 #include <json/reader.h>
 #include <stdexcept>
