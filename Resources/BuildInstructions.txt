@@ -10,7 +10,7 @@ Generic GNU/Linux (static linking)
 Debian Sid (dynamic linking)
 ============================
 
-# sudo apt-get install build-essential unzip cmake libgdcm2-dev libjpeg-dev \
+# sudo apt-get install build-essential unzip cmake libjpeg-dev \
                        uuid-dev libgtest-dev libpng-dev libsqlite3-dev \
                        zlib1g-dev libboost-all-dev libjsoncpp-dev 
 

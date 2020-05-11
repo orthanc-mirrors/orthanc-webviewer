@@ -29,7 +29,6 @@
 #include <Core/SystemToolbox.h>
 #include <Core/Toolbox.h>
 #include <Plugins/Samples/Common/OrthancPluginCppWrapper.h>
-#include <Plugins/Samples/GdcmDecoder/GdcmDecoderCache.h>
 
 #include <boost/thread.hpp>
 #include <boost/lexical_cast.hpp>
@@ -57,8 +56,6 @@
 
 
 static OrthancPluginContext* context_ = NULL;
-static bool restrictTransferSyntaxes_ = false;
-static std::set<std::string> enabledTransferSyntaxes_;
 
 
 class CacheContext
@@ -89,7 +86,6 @@ private:
   Orthanc::SharedMessageQueue  newInstances_;
   bool stop_;
   boost::thread newInstancesThread_;
-  OrthancPlugins::GdcmDecoderCache  decoder_;
 
   static void NewInstancesThread(CacheContext* cache)
   {
@@ -147,11 +143,6 @@ public:
   void SignalNewInstance(const char* instanceId)
   {
     newInstances_.Enqueue(new DynamicString(instanceId));
-  }
-
-  OrthancPlugins::GdcmDecoderCache&  GetDecoder()
-  {
-    return decoder_;
   }
 };
 
@@ -349,128 +340,7 @@ static OrthancPluginErrorCode IsStableSeries(OrthancPluginRestOutput* output,
 
 
 
-static bool ExtractTransferSyntax(std::string& transferSyntax,
-                                  const void* dicom,
-                                  const uint32_t size)
-{
-  Orthanc::DicomMap header;
-  if (!Orthanc::DicomMap::ParseDicomMetaInformation(header, reinterpret_cast<const char*>(dicom), size))
-  {
-    return false;
-  }
-
-  const Orthanc::DicomValue* tag = header.TestAndGetValue(0x0002, 0x0010);
-  if (tag == NULL ||
-      tag->IsNull() ||
-      tag->IsBinary())
-  {
-    return false;
-  }
-  else
-  {
-    // Stripping spaces should not be required, as this is a UI value
-    // representation whose stripping is supported by the Orthanc
-    // core, but let's be careful...
-    transferSyntax = Orthanc::Toolbox::StripSpaces(tag->GetContent());
-    return true;
-  }
-}
-
-
-static bool IsTransferSyntaxEnabled(const void* dicom,
-                                    const uint32_t size)
-{
-  std::string formattedSize;
-
-  {
-    char tmp[16];
-    sprintf(tmp, "%0.1fMB", static_cast<float>(size) / (1024.0f * 1024.0f));
-    formattedSize.assign(tmp);
-  }
-
-  if (!restrictTransferSyntaxes_)
-  {
-    std::string s = "Decoding one DICOM instance of " + formattedSize + " using GDCM";
-    OrthancPluginLogInfo(context_, s.c_str());
-    return true;
-  }
-
-  std::string transferSyntax;
-  if (!ExtractTransferSyntax(transferSyntax, dicom, size))
-  {
-    std::string s = ("Cannot extract the transfer syntax of this instance of " + 
-                     formattedSize + ", will use GDCM to decode it");
-    OrthancPluginLogInfo(context_, s.c_str());
-    return true;
-  }
-
-  if (enabledTransferSyntaxes_.find(transferSyntax) != enabledTransferSyntaxes_.end())
-  {
-    // Decoding for this transfer syntax is enabled
-    std::string s = ("Using GDCM to decode this instance of " + 
-                     formattedSize + " with transfer syntax " + transferSyntax);
-    OrthancPluginLogInfo(context_, s.c_str());
-    return true;
-  }
-  else
-  {
-    std::string s = ("Won't use GDCM to decode this instance of " + 
-                     formattedSize + ", as its transfer syntax " + transferSyntax + " is disabled");
-    OrthancPluginLogInfo(context_, s.c_str());
-    return false;
-  }
-}
-
-
-static OrthancPluginErrorCode DecodeImageCallback(OrthancPluginImage** target,
-                                                  const void* dicom,
-                                                  const uint32_t size,
-                                                  uint32_t frameIndex)
-{
-  try
-  {
-    if (!IsTransferSyntaxEnabled(dicom, size))
-    {
-      *target = NULL;
-      return OrthancPluginErrorCode_Success;
-    }
-
-    std::unique_ptr<OrthancPlugins::OrthancImageWrapper> image;
-
-#if 0
-    // Do not use the cache
-    OrthancPlugins::GdcmImageDecoder decoder(dicom, size);
-    image.reset(new OrthancPlugins::OrthancImageWrapper(context_, decoder, frameIndex));
-#else
-    using namespace OrthancPlugins;
-    image.reset(cache_->GetDecoder().Decode(context_, dicom, size, frameIndex));
-#endif
-
-    *target = image->Release();
-
-    return OrthancPluginErrorCode_Success;
-  }
-  catch (Orthanc::OrthancException& e)
-  {
-    *target = NULL;
-
-    std::string s = "Cannot decode image using GDCM: " + std::string(e.What());
-    OrthancPluginLogWarning(context_, s.c_str());
-    return OrthancPluginErrorCode_Plugin;
-  }
-  catch (std::runtime_error& e)
-  {
-    *target = NULL;
-
-    std::string s = "Cannot decode image using GDCM: " + std::string(e.what());
-    OrthancPluginLogWarning(context_, s.c_str());
-    return OrthancPluginErrorCode_Plugin;
-  }
-}
-
-
-void ParseConfiguration(bool& enableGdcm,
-                        int& decodingThreads,
+void ParseConfiguration(int& decodingThreads,
                         boost::filesystem::path& cachePath,
                         int& cacheSize)
 {
@@ -500,49 +370,6 @@ void ParseConfiguration(bool& enableGdcm,
     cachePath = OrthancPlugins::GetStringValue(configuration[CONFIG_WEB_VIEWER], key, cachePath.string());
     cacheSize = OrthancPlugins::GetIntegerValue(configuration[CONFIG_WEB_VIEWER], "CacheSize", cacheSize);
     decodingThreads = OrthancPlugins::GetIntegerValue(configuration[CONFIG_WEB_VIEWER], "Threads", decodingThreads);
-
-    static const char* CONFIG_ENABLE_GDCM = "EnableGdcm";
-    if (configuration[CONFIG_WEB_VIEWER].isMember(CONFIG_ENABLE_GDCM))
-    {
-      if (configuration[CONFIG_WEB_VIEWER][CONFIG_ENABLE_GDCM].type() != Json::booleanValue)
-      {
-        throw Orthanc::OrthancException(Orthanc::ErrorCode_BadFileFormat);
-      }
-      else
-      {
-        enableGdcm = configuration[CONFIG_WEB_VIEWER][CONFIG_ENABLE_GDCM].asBool();
-      }
-    }
-
-    if (enableGdcm)
-    {
-      static const char* CONFIG_RESTRICT_TRANSFER_SYNTAXES = "RestrictTransferSyntaxes";
-
-      if (configuration[CONFIG_WEB_VIEWER].isMember(CONFIG_RESTRICT_TRANSFER_SYNTAXES))
-      {
-        const Json::Value& config = configuration[CONFIG_WEB_VIEWER][CONFIG_RESTRICT_TRANSFER_SYNTAXES];
-
-        if (config.type() != Json::arrayValue)
-        {
-          throw Orthanc::OrthancException(Orthanc::ErrorCode_BadFileFormat);
-        }
-
-        restrictTransferSyntaxes_ = true;
-        for (Json::Value::ArrayIndex i = 0; i < config.size(); i++)
-        {
-          if (config[i].type() != Json::stringValue)
-          {
-            throw Orthanc::OrthancException(Orthanc::ErrorCode_BadFileFormat);
-          }
-          else
-          {
-            std::string s = "Web viewer will use GDCM to decode transfer syntax " + config[i].asString();
-            enabledTransferSyntaxes_.insert(config[i].asString());
-            OrthancPluginLogWarning(context_, s.c_str());
-          }
-        }
-      }
-    }
   }
 
   if (decodingThreads <= 0 ||
@@ -598,16 +425,13 @@ extern "C"
       decodingThreads = 1;
     }
 
-    /* By default, use GDCM */
-    bool enableGdcm = true;
-
     try
     {
       /* By default, a cache of 100 MB is used */
       int cacheSize = 100; 
 
       boost::filesystem::path cachePath;
-      ParseConfiguration(enableGdcm, decodingThreads, cachePath, cacheSize);
+      ParseConfiguration(decodingThreads, cachePath, cacheSize);
 
       std::string message = ("Web viewer using " + boost::lexical_cast<std::string>(decodingThreads) + 
                              " threads for the decoding of the DICOM images");
@@ -690,19 +514,6 @@ extern "C"
         OrthancPluginLogError(context_, e.What());
       }
       return -1;
-    }
-
-
-    /* Configure the DICOM decoder */
-    if (enableGdcm)
-    {
-      // Replace the default decoder of DICOM images that is built in Orthanc
-      OrthancPluginLogWarning(context_, "Using GDCM instead of the DICOM decoder that is built in Orthanc");
-      OrthancPluginRegisterDecodeImageCallback(context_, DecodeImageCallback);
-    }
-    else
-    {
-      OrthancPluginLogWarning(context_, "Using the DICOM decoder that is built in Orthanc (not using GDCM)");
     }
 
 
