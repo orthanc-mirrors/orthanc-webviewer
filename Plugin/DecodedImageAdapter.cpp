@@ -27,7 +27,6 @@
 #include <Core/Images/ImageProcessing.h>
 #include <Core/OrthancException.h>
 #include <Core/Toolbox.h>
-#include <Plugins/Samples/GdcmDecoder/OrthancImageWrapper.h>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -150,9 +149,9 @@ namespace OrthancPlugins
       throw Orthanc::OrthancException(Orthanc::ErrorCode_UnknownResource);
     }
 
-    std::unique_ptr<OrthancImageWrapper> image(
-      new OrthancImageWrapper(context_, OrthancPluginDecodeDicomImage(
-                                context_, dicom.c_str(), dicom.size(), frameIndex)));
+    std::unique_ptr<OrthancImage> image(
+      new OrthancImage(OrthancPluginDecodeDicomImage(
+                         context_, dicom.c_str(), dicom.size(), frameIndex)));
 
     Json::Value json;
     if (GetCornerstoneMetadata(json, tags, *image))
@@ -191,14 +190,14 @@ namespace OrthancPlugins
 
   bool DecodedImageAdapter::GetCornerstoneMetadata(Json::Value& result,
                                                    const Json::Value& tags,
-                                                   OrthancImageWrapper& image)
+                                                   OrthancImage& image)
   {
     using namespace Orthanc;
 
     float windowCenter, windowWidth;
 
     Orthanc::ImageAccessor accessor;
-    accessor.AssignReadOnly(OrthancPlugins::Convert(image.GetFormat()), image.GetWidth(),
+    accessor.AssignReadOnly(OrthancPlugins::Convert(image.GetPixelFormat()), image.GetWidth(),
                             image.GetHeight(), image.GetPitch(), image.GetBuffer());
 
     switch (accessor.GetFormat())
@@ -311,10 +310,10 @@ namespace OrthancPlugins
 
 
   bool  DecodedImageAdapter::EncodeUsingDeflate(Json::Value& result,
-                                                OrthancImageWrapper& image)
+                                                OrthancImage& image)
   {
     Orthanc::ImageAccessor accessor;
-    accessor.AssignReadOnly(OrthancPlugins::Convert(image.GetFormat()), image.GetWidth(),
+    accessor.AssignReadOnly(OrthancPlugins::Convert(image.GetPixelFormat()), image.GetWidth(),
                             image.GetHeight(), image.GetPitch(), image.GetBuffer());
 
     std::unique_ptr<Orthanc::ImageBuffer> buffer;
@@ -363,7 +362,7 @@ namespace OrthancPlugins
     result["sizeInBytes"] = converted.GetSize();
 
     std::string z;
-    CompressUsingDeflate(z, image.GetContext(), converted.GetConstBuffer(), converted.GetSize());
+    CompressUsingDeflate(z, GetGlobalContext(), converted.GetConstBuffer(), converted.GetSize());
     
     std::string s;
     Orthanc::Toolbox::EncodeBase64(s, z);
@@ -422,11 +421,11 @@ namespace OrthancPlugins
 
 
   bool  DecodedImageAdapter::EncodeUsingJpeg(Json::Value& result,
-                                             OrthancImageWrapper& image,
+                                             OrthancImage& image,
                                              uint8_t quality /* between 0 and 100 */)
   {
     Orthanc::ImageAccessor accessor;
-    accessor.AssignReadOnly(OrthancPlugins::Convert(image.GetFormat()), image.GetWidth(),
+    accessor.AssignReadOnly(OrthancPlugins::Convert(image.GetPixelFormat()), image.GetWidth(),
                             image.GetHeight(), image.GetPitch(), image.GetBuffer());
 
     std::unique_ptr<Orthanc::ImageBuffer> buffer;
@@ -485,7 +484,7 @@ namespace OrthancPlugins
     result["sizeInBytes"] = converted.GetSize();
 
     std::string jpeg;
-    WriteJpegToMemory(jpeg, image.GetContext(), converted, quality);
+    WriteJpegToMemory(jpeg, GetGlobalContext(), converted, quality);
 
     std::string s;
     Orthanc::Toolbox::EncodeBase64(s, jpeg);

@@ -27,7 +27,7 @@
 #include <stdint.h>
 #include <json/value.h>
 
-#include <Plugins/Samples/GdcmDecoder/OrthancImageWrapper.h>
+#include <Plugins/Samples/Common/OrthancPluginCppWrapper.h>
 
 
 namespace OrthancPlugins
@@ -49,13 +49,13 @@ namespace OrthancPlugins
 
     static bool GetCornerstoneMetadata(Json::Value& result,
                                        const Json::Value& tags,
-                                       OrthancImageWrapper& image);
+                                       OrthancImage& image);
 
     static bool EncodeUsingDeflate(Json::Value& result,
-                                   OrthancImageWrapper& image);
+                                   OrthancImage& image);
 
     static bool EncodeUsingJpeg(Json::Value& result,
-                                OrthancImageWrapper& image,
+                                OrthancImage& image,
                                 uint8_t quality /* between 0 and 100 */);
 
     OrthancPluginContext* context_;

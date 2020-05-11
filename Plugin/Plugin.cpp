@@ -28,6 +28,7 @@
 #include <Core/OrthancException.h>
 #include <Core/SystemToolbox.h>
 #include <Core/Toolbox.h>
+#include <Plugins/Samples/Common/OrthancPluginCppWrapper.h>
 #include <Plugins/Samples/GdcmDecoder/GdcmDecoderCache.h>
 
 #include <boost/thread.hpp>
@@ -568,6 +569,7 @@ extern "C"
   {
     using namespace OrthancPlugins;
 
+    OrthancPlugins::SetGlobalContext(context);
     context_ = context;
     assert(DisplayPerformanceWarning());
     OrthancPluginLogWarning(context_, "Initializing the Web viewer");
