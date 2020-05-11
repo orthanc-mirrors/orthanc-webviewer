@@ -23,6 +23,7 @@
 var compression = 'jpeg95';
 var isFirst = true;
 //var compression = 'deflate';
+var unsupportedMessage = 'Error: The Orthanc core does not support the decoding of this image. Make sure that you have properly installed a suitable decoder plugin (e.g. the official GDCM decoder plugin).';
 
 
 // Prevent the access to IE
@@ -383,7 +384,7 @@ function ZoomOut()
         result = image;
       },
       error: function() {
-        alert('Error: This image is not supported by the Web viewer.');
+        alert(unsupportedMessage);
         return null;
       }
     });
@@ -430,7 +431,7 @@ $(document).ready(function() {
       }
     },
     failure: function() {
-      alert('Error: This image is not supported by the Web viewer.');
+      alert(unsupportedMessage);
     }
   });
   
