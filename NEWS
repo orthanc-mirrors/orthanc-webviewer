@@ -8,13 +8,14 @@ Pending changes in the mainline
   are now transmitted to the viewer and included as headers in every
   HTTP request to the Rest API easing the usage of the Authorization
   plugin
+* Upgraded Orthanc framework to 1.6.1
 
 
 Version 2.5 (2019-02-27)
 ========================
 
 * Upgrade to GDCM 2.8.8 for static builds
-* Upgraded Orthanc framework
+* Upgraded Orthanc framework to 1.5.5
 
 
 Version 2.4 (2018-04-23)
@@ -26,7 +27,7 @@ Version 2.4 (2018-04-23)
 * Support of rendering RGB48 lookup tables (palette), if Orthanc SDK >= 1.3.1
 * Support of OpenBSD
 * Support of Linux Standard Base
-* Resort to Orthanc framework
+* Resort to Orthanc framework 1.3.2
 * Upgrade to GDCM 2.8.4 for static builds
 
 
