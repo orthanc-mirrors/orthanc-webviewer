@@ -397,6 +397,7 @@ extern "C"
     using namespace OrthancPlugins;
 
     OrthancPlugins::SetGlobalContext(context);
+    Orthanc::Logging::Initialize(context);
     context_ = context;
     assert(DisplayPerformanceWarning());
     OrthancPluginLogWarning(context_, "Initializing the Web viewer");
