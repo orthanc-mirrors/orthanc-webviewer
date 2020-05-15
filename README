@@ -12,16 +12,15 @@ Web viewer for Orthanc, the lightweight, RESTful DICOM server.
 Dependencies
 ------------
 
-The Web viewer is based upon the following projects:
+The Web viewer is based upon the Cornerstone project, a client-side
+JavaScript library to display medical images in Web browsers, by Chris
+Hafey <chafey@gmail.com>:
+https://github.com/chafey/cornerstone
 
-* Cornerstone, a client-side JavaScript library to display medical
-  images in Web browsers, by Chris Hafey <chafey@gmail.com>:
-  https://github.com/chafey/cornerstone
-
-* GDCM, an open-source implementation of the DICOM standard with
-  advanced features for image decoding, by Mathieu Malaterre
-  <mathieu.malaterre@gmail.com>:
-  http://sourceforge.net/projects/gdcm/
+In releases < 3.0, this plugin was also implementing primitives to
+decode DICOM images using GDCM in Orthanc. Starting with release 3.0,
+these primitives are available as part of the "orthanc-gdcm" plugin:
+http://sourceforge.net/projects/gdcm/
 
 
 Installation and usage
