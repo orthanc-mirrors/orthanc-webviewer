@@ -24,8 +24,7 @@ project(OrthancWebViewer)
 set(ORTHANC_PLUGIN_VERSION "mainline")
 
 if (ORTHANC_PLUGIN_VERSION STREQUAL "mainline")
-  #set(ORTHANC_FRAMEWORK_DEFAULT_VERSION "mainline")
-  set(ORTHANC_FRAMEWORK_DEFAULT_VERSION "1.6.1")  # TODO - Must be set to "mainline" after 1.7.0
+  set(ORTHANC_FRAMEWORK_DEFAULT_VERSION "mainline")
   set(ORTHANC_FRAMEWORK_DEFAULT_SOURCE "hg")
 else()
   set(ORTHANC_FRAMEWORK_DEFAULT_VERSION "1.6.1")
