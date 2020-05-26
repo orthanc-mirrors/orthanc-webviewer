@@ -17,8 +17,8 @@ JavaScript library to display medical images in Web browsers, by Chris
 Hafey <chafey@gmail.com>:
 https://github.com/chafey/cornerstone
 
-In releases < 3.0, this plugin was also implementing primitives to
-decode DICOM images using GDCM in Orthanc. Starting with release 3.0,
+In releases < 2.6, this plugin was also implementing primitives to
+decode DICOM images using GDCM in Orthanc. Starting with release 2.6,
 these primitives are available as part of the "orthanc-gdcm" plugin:
 http://sourceforge.net/projects/gdcm/
 
