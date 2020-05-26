@@ -54,6 +54,8 @@ include(${ORTHANC_ROOT}/Resources/CMake/OrthancFrameworkParameters.cmake)
 set(ENABLE_LOCALE OFF)         # Disable support for locales (notably in Boost)
 set(ENABLE_GOOGLE_TEST ON)
 set(ENABLE_SQLITE ON)
+set(ENABLE_MODULE_JOBS OFF CACHE INTERNAL "")
+set(ENABLE_MODULE_DICOM OFF CACHE INTERNAL "")
 
 include(${ORTHANC_ROOT}/Resources/CMake/OrthancFrameworkConfiguration.cmake)
 include_directories(${ORTHANC_ROOT})
