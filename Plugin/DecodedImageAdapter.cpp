@@ -125,8 +125,7 @@ namespace OrthancPlugins
   bool DecodedImageAdapter::Create(std::string& content,
                                    const std::string& uri)
   {
-    std::string message = "Decoding DICOM instance: " + uri;
-    OrthancPluginLogInfo(context_, message.c_str());
+    LOG(INFO) << "Decoding DICOM instance: " << uri;
 
     CompressionType type;
     uint8_t level;
@@ -137,7 +136,6 @@ namespace OrthancPlugins
     {
       return false;
     }
-
 
     bool ok = false;
 
@@ -180,9 +178,7 @@ namespace OrthancPlugins
     }
     else
     {
-      char msg[1024];
-      sprintf(msg, "Unable to decode the following instance: %s", uri.c_str());
-      OrthancPluginLogWarning(context_, msg);
+      LOG(WARNING) << "Unable to decode the following instance: " << uri;
       return false;
     }
   }
