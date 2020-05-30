@@ -56,6 +56,7 @@ set(ENABLE_GOOGLE_TEST ON)
 set(ENABLE_SQLITE ON)
 set(ENABLE_MODULE_JOBS OFF CACHE INTERNAL "")
 set(ENABLE_MODULE_DICOM OFF CACHE INTERNAL "")
+set(HAS_EMBEDDED_RESOURCES ON)
 
 include(${ORTHANC_ROOT}/Resources/CMake/OrthancFrameworkConfiguration.cmake)
 include_directories(${ORTHANC_ROOT})
