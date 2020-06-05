@@ -47,8 +47,6 @@ set(USE_SYSTEM_ORTHANC_SDK ON CACHE BOOL "Use the system version of the Orthanc 
 
 # Download and setup the Orthanc framework
 include(${CMAKE_SOURCE_DIR}/Resources/Orthanc/DownloadOrthancFramework.cmake)
-
-set(ORTHANC_FRAMEWORK_PLUGIN ON)
 include(${ORTHANC_ROOT}/Resources/CMake/OrthancFrameworkParameters.cmake)
 
 set(ENABLE_LOCALE OFF)         # Disable support for locales (notably in Boost)
@@ -92,6 +90,7 @@ endif()
 
 add_definitions(
   -DORTHANC_ENABLE_LOGGING_PLUGIN=1
+  -DORTHANC_FRAMEWORK_BUILDING_PLUGIN=1
   -DHAS_ORTHANC_EXCEPTION=1
   )
 
