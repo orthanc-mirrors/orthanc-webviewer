@@ -218,7 +218,7 @@ namespace OrthancPlugins
       char* tmp = OrthancPluginGetConfiguration(context);
       if (tmp == NULL)
       {
-        OrthancPluginLogError(context, "Error while retrieving the configuration from Orthanc");
+        LOG(ERROR) << "Error while retrieving the configuration from Orthanc";
         return false;
       }
 
@@ -233,7 +233,7 @@ namespace OrthancPlugins
     }
     else
     {
-      OrthancPluginLogError(context, "Unable to parse the configuration");
+      LOG(ERROR) << "Unable to parse the configuration";
       return false;
     }
   }

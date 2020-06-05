@@ -168,7 +168,7 @@ static OrthancPluginErrorCode OnChangeCallback(OrthancPluginChangeType changeTyp
   }
   catch (std::runtime_error& e)
   {
-    OrthancPluginLogError(context_, e.what());
+    LOG(ERROR) << e.what();
     return OrthancPluginErrorCode_Success;  // Ignore error
   }
 }
@@ -204,17 +204,17 @@ static OrthancPluginErrorCode ServeCache(OrthancPluginRestOutput* output,
   }
   catch (Orthanc::OrthancException& e)
   {
-    OrthancPluginLogError(context_, e.What());
+    LOG(ERROR) << e.What();
     return OrthancPluginErrorCode_Plugin;
   }
   catch (std::runtime_error& e)
   {
-    OrthancPluginLogError(context_, e.what());
+    LOG(ERROR) << e.what();
     return OrthancPluginErrorCode_Plugin;
   }
   catch (boost::bad_lexical_cast&)
   {
-    OrthancPluginLogError(context_, "Bad lexical cast");
+    LOG(ERROR) << "Bad lexical cast";
     return OrthancPluginErrorCode_Plugin;
   }
 }
@@ -245,8 +245,7 @@ static OrthancPluginErrorCode ServeWebViewer(OrthancPluginRestOutput* output,
   }
   catch (Orthanc::OrthancException&)
   {
-    std::string s = "Inexistent file in served folder: " + path;
-    OrthancPluginLogError(context_, s.c_str());
+    LOG(ERROR) << "Inexistent file in served folder: " << path;
     OrthancPluginSendHttpStatusCode(context_, output, 404);
   }
 
@@ -282,8 +281,7 @@ static OrthancPluginErrorCode ServeEmbeddedFolder(OrthancPluginRestOutput* outpu
   }
   catch (std::runtime_error&)
   {
-    std::string s = "Unknown static resource in plugin: " + std::string(request->groups[0]);
-    OrthancPluginLogError(context_, s.c_str());
+    LOG(ERROR) << "Unknown static resource in plugin: " << request->groups[0];
     OrthancPluginSendHttpStatusCode(context_, output, 404);
     return OrthancPluginErrorCode_Success;
   }
@@ -323,17 +321,17 @@ static OrthancPluginErrorCode IsStableSeries(OrthancPluginRestOutput* output,
   }
   catch (Orthanc::OrthancException& e)
   {
-    OrthancPluginLogError(context_, e.What());
+    LOG(ERROR) << e.What();
     return OrthancPluginErrorCode_Plugin;
   }
   catch (std::runtime_error& e)
   {
-    OrthancPluginLogError(context_, e.what());
+    LOG(ERROR) << e.what();
     return OrthancPluginErrorCode_Plugin;
   }
   catch (boost::bad_lexical_cast&)
   {
-    OrthancPluginLogError(context_, "Bad lexical cast");
+    LOG(ERROR) << "Bad lexical cast";
     return OrthancPluginErrorCode_Plugin;
   }
 }
@@ -384,8 +382,8 @@ void ParseConfiguration(int& decodingThreads,
 static bool DisplayPerformanceWarning()
 {
   (void) DisplayPerformanceWarning;   // Disable warning about unused function
-  OrthancPluginLogWarning(context_, "Performance warning in Web viewer: "
-                          "Non-release build, runtime debug assertions are turned on");
+  LOG(WARNING) << "Performance warning in Web viewer: "
+               << "Non-release build, runtime debug assertions are turned on";
   return true;
 }
 
@@ -400,7 +398,7 @@ extern "C"
     Orthanc::Logging::Initialize(context);
     context_ = context;
     assert(DisplayPerformanceWarning());
-    OrthancPluginLogWarning(context_, "Initializing the Web viewer");
+    LOG(WARNING) << "Initializing the Web viewer";
 
 
     /* Check the version of the Orthanc core */
@@ -412,7 +410,7 @@ extern "C"
               ORTHANC_PLUGINS_MINIMAL_MAJOR_NUMBER,
               ORTHANC_PLUGINS_MINIMAL_MINOR_NUMBER,
               ORTHANC_PLUGINS_MINIMAL_REVISION_NUMBER);
-      OrthancPluginLogError(context_, info);
+      OrthancPluginLogError(context, info);
       return -1;
     }
 
@@ -434,12 +432,10 @@ extern "C"
       boost::filesystem::path cachePath;
       ParseConfiguration(decodingThreads, cachePath, cacheSize);
 
-      std::string message = ("Web viewer using " + boost::lexical_cast<std::string>(decodingThreads) + 
-                             " threads for the decoding of the DICOM images");
-      OrthancPluginLogWarning(context_, message.c_str());
+      LOG(WARNING) << "Web viewer using " << decodingThreads
+                   << " threads for the decoding of the DICOM images";
 
-      message = "Storing the cache of the Web viewer in folder: " + cachePath.string();
-      OrthancPluginLogWarning(context_, message.c_str());
+      LOG(WARNING) << "Storing the cache of the Web viewer in folder: " << cachePath.string();
 
    
       /* Create the cache */
@@ -453,18 +449,18 @@ extern "C"
       if (!scheduler.LookupProperty(orthancVersion, CacheProperty_OrthancVersion) ||
           orthancVersion != std::string(context_->orthancVersion))
       {
-        std::string s = ("The version of Orthanc has changed from \"" + orthancVersion + "\" to \"" + 
-                         std::string(context_->orthancVersion) + "\": The cache of the Web viewer will be cleared");
-        OrthancPluginLogWarning(context_, s.c_str());
+        LOG(WARNING) << "The version of Orthanc has changed from \"" << orthancVersion
+                     << "\" to \"" << context_->orthancVersion
+                     << "\": The cache of the Web viewer will be cleared";
         clear = true;
       }
 
       if (!scheduler.LookupProperty(webViewerVersion, CacheProperty_WebViewerVersion) ||
           webViewerVersion != std::string(ORTHANC_PLUGIN_VERSION))
       {
-        std::string s = ("The version of the Web viewer plugin has changed from \"" + webViewerVersion + "\" to \"" + 
-                         std::string(ORTHANC_PLUGIN_VERSION) + "\": The cache of the Web viewer will be cleared");
-        OrthancPluginLogWarning(context_, s.c_str());
+        LOG(WARNING) << "The version of the Web viewer plugin has changed from \""
+                     << webViewerVersion << "\" to \"" << ORTHANC_PLUGIN_VERSION
+                     << "\": The cache of the Web viewer will be cleared";
         clear = true;
       }
 
@@ -472,14 +468,14 @@ extern "C"
       /* Clear the cache if needed */
       if (clear)
       {
-        OrthancPluginLogWarning(context_, "Clearing the cache of the Web viewer");
+        LOG(WARNING) << "Clearing the cache of the Web viewer";
         scheduler.Clear();
         scheduler.SetProperty(CacheProperty_OrthancVersion, context_->orthancVersion);
         scheduler.SetProperty(CacheProperty_WebViewerVersion, ORTHANC_PLUGIN_VERSION);
       }
       else
       {
-        OrthancPluginLogInfo(context_, "No change in the versions, no need to clear the cache of the Web viewer");
+        LOG(INFO) << "No change in the versions, no need to clear the cache of the Web viewer";
       }
 
 
@@ -494,25 +490,24 @@ extern "C"
       /* Set the quotas */
       scheduler.SetQuota(CacheBundle_SeriesInformation, 1000, 0);    // Keep info about 1000 series
       
-      message = "Web viewer using a cache of " + boost::lexical_cast<std::string>(cacheSize) + " MB";
-      OrthancPluginLogWarning(context_, message.c_str());
+      LOG(WARNING) << "Web viewer using a cache of " << cacheSize << " MB";
 
       scheduler.SetQuota(CacheBundle_DecodedImage, 0, static_cast<uint64_t>(cacheSize) * 1024 * 1024);
     }
     catch (std::runtime_error& e)
     {
-      OrthancPluginLogError(context_, e.what());
+      LOG(ERROR) << e.what();
       return -1;
     }
     catch (Orthanc::OrthancException& e)
     {
       if (e.GetErrorCode() == Orthanc::ErrorCode_BadFileFormat)
       {
-        OrthancPluginLogError(context_, "Unable to read the configuration of the Web viewer plugin");
+        LOG(ERROR) << "Unable to read the configuration of the Web viewer plugin";
       }
       else
       {
-        OrthancPluginLogError(context_, e.What());
+        LOG(ERROR) << e.What();
       }
       return -1;
     }
@@ -544,7 +539,7 @@ extern "C"
 
   ORTHANC_PLUGINS_API void OrthancPluginFinalize()
   {
-    OrthancPluginLogWarning(context_, "Finalizing the Web viewer");
+    LOG(WARNING) << "Finalizing the Web viewer";
 
     if (cache_ != NULL)
     {

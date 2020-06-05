@@ -30,8 +30,7 @@ namespace OrthancPlugins
   bool SeriesInformationAdapter::Create(std::string& content,
                                         const std::string& seriesId)
   {
-    std::string message = "Ordering instances of series: " + seriesId;
-    OrthancPluginLogInfo(context_, message.c_str());
+    LOG(INFO) << "Ordering instances of series: " << seriesId;
 
     Json::Value series, study, patient, ordered;
     if (!GetJsonFromOrthanc(series, context_, "/series/" + seriesId) ||
