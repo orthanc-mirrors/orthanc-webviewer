@@ -395,7 +395,7 @@ extern "C"
     using namespace OrthancPlugins;
 
     OrthancPlugins::SetGlobalContext(context);
-    Orthanc::Logging::Initialize(context);
+    Orthanc::Logging::InitializePluginContext(context);
     context_ = context;
     assert(DisplayPerformanceWarning());
     LOG(WARNING) << "Initializing the Web viewer";
@@ -546,6 +546,8 @@ extern "C"
       delete cache_;
       cache_ = NULL;
     }
+
+    Orthanc::Logging::Finalize();
   }
 
 
