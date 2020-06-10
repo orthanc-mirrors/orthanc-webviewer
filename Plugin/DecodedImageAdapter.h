@@ -23,11 +23,9 @@
 
 #include "Cache/ICacheFactory.h"
 
-#include <orthanc/OrthancCPlugin.h>
+#include <OrthancPluginCppWrapper.h>
 #include <stdint.h>
 #include <json/value.h>
-
-#include <Plugins/Samples/Common/OrthancPluginCppWrapper.h>
 
 
 namespace OrthancPlugins

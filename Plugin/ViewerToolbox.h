@@ -21,11 +21,11 @@
 
 #pragma once
 
+#include <Images/ImageAccessor.h>
+
 #include <string>
 #include <json/value.h>
 #include <orthanc/OrthancCPlugin.h>
-
-#include <Core/Images/ImageAccessor.h>
 
 namespace OrthancPlugins
 {

@@ -30,9 +30,10 @@ static char** argv_;
 #include "../Plugin/Cache/ICacheFactory.h"
 #include "../Plugin/Cache/ICacheFactory.h"
 
-#include <Core/Logging.h>
-#include <Core/OrthancException.h>
-#include <Core/SystemToolbox.h>
+#include <Compatibility.h>
+#include <Logging.h>
+#include <OrthancException.h>
+#include <SystemToolbox.h>
 
 using namespace OrthancPlugins;
 
@@ -40,9 +41,9 @@ using namespace OrthancPlugins;
 class CacheManagerTest : public testing::Test
 {
 private:
-  std::auto_ptr<Orthanc::FilesystemStorage>  storage_;
-  std::auto_ptr<Orthanc::SQLite::Connection>  db_;
-  std::auto_ptr<CacheManager>  cache_;
+  std::unique_ptr<Orthanc::FilesystemStorage>  storage_;
+  std::unique_ptr<Orthanc::SQLite::Connection>  db_;
+  std::unique_ptr<CacheManager>  cache_;
 
 public:
   virtual void SetUp()

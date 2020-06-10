@@ -23,10 +23,10 @@
 
 #include "ViewerToolbox.h"
 
-#include <Core/Images/ImageBuffer.h>
-#include <Core/Images/ImageProcessing.h>
-#include <Core/OrthancException.h>
-#include <Core/Toolbox.h>
+#include <Images/ImageBuffer.h>
+#include <Images/ImageProcessing.h>
+#include <OrthancException.h>
+#include <Toolbox.h>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/predicate.hpp>

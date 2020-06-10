@@ -24,11 +24,11 @@
 #include "DecodedImageAdapter.h"
 #include "SeriesInformationAdapter.h"
 
-#include <Core/DicomFormat/DicomMap.h>
-#include <Core/OrthancException.h>
-#include <Core/SystemToolbox.h>
-#include <Core/Toolbox.h>
-#include <Plugins/Samples/Common/OrthancPluginCppWrapper.h>
+#include <DicomFormat/DicomMap.h>
+#include <OrthancException.h>
+#include <SystemToolbox.h>
+#include <Toolbox.h>
+#include <OrthancPluginCppWrapper.h>
 
 #include <boost/thread.hpp>
 #include <boost/lexical_cast.hpp>

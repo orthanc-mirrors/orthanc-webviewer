@@ -23,7 +23,8 @@
 
 #include "CacheIndex.h"
 
-#include <Core/OrthancException.h>
+#include <Compatibility.h>
+#include <OrthancException.h>
 #include <stdio.h>
 
 namespace OrthancPlugins
@@ -74,7 +75,7 @@ namespace OrthancPlugins
 
     DynamicString* Dequeue(int32_t msTimeout)
     {
-      std::auto_ptr<Orthanc::IDynamicObject> message(queue_.Dequeue(msTimeout));
+      std::unique_ptr<Orthanc::IDynamicObject> message(queue_.Dequeue(msTimeout));
       if (message.get() == NULL)
       {
         return NULL;
@@ -111,7 +112,7 @@ namespace OrthancPlugins
     {
       while (!(that->done_))
       {
-        std::auto_ptr<DynamicString> prefetch(that->queue_.Dequeue(500));
+        std::unique_ptr<DynamicString> prefetch(that->queue_.Dequeue(500));
 
         try
         {
@@ -218,9 +219,9 @@ namespace OrthancPlugins
   class CacheScheduler::BundleScheduler
   {
   private:
-    std::auto_ptr<ICacheFactory>   factory_;
-    PrefetchQueue                  queue_;
-    std::vector<Prefetcher*>       prefetchers_;
+    std::unique_ptr<ICacheFactory>   factory_;
+    PrefetchQueue                    queue_;
+    std::vector<Prefetcher*>         prefetchers_;
 
   public:
     BundleScheduler(int bundleIndex,
@@ -296,8 +297,7 @@ namespace OrthancPlugins
   CacheScheduler::CacheScheduler(CacheManager& cache,
                                  unsigned int maxPrefetchSize) :
     maxPrefetchSize_(maxPrefetchSize),
-    cache_(cache),
-    policy_(NULL)
+    cache_(cache)
   {
   }
 

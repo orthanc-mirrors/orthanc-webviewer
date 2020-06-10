@@ -21,8 +21,9 @@
 
 #include "CacheManager.h"
 
-#include <Core/Toolbox.h>
-#include <Core/SQLite/Transaction.h>
+#include <Compatibility.h>
+#include <Toolbox.h>
+#include <SQLite/Transaction.h>
 
 #include <boost/lexical_cast.hpp>
 
@@ -218,7 +219,7 @@ namespace OrthancPlugins
     using namespace Orthanc;
 
     // Remove the cached files that exceed the quota
-    std::auto_ptr<SQLite::Transaction> transaction(new SQLite::Transaction(pimpl_->db_));
+    std::unique_ptr<SQLite::Transaction> transaction(new SQLite::Transaction(pimpl_->db_));
     transaction->Begin();
 
     Bundle bundle = GetBundle(bundleIndex);
@@ -343,7 +344,7 @@ namespace OrthancPlugins
 
     using namespace Orthanc;
 
-    std::auto_ptr<SQLite::Transaction> transaction(new SQLite::Transaction(pimpl_->db_));
+    std::unique_ptr<SQLite::Transaction> transaction(new SQLite::Transaction(pimpl_->db_));
     transaction->Begin();
 
     Bundle bundle = GetBundle(bundleIndex);
@@ -414,7 +415,7 @@ namespace OrthancPlugins
     using namespace Orthanc;
     SanityCheck();
 
-    std::auto_ptr<SQLite::Transaction> transaction(new SQLite::Transaction(pimpl_->db_));
+    std::unique_ptr<SQLite::Transaction> transaction(new SQLite::Transaction(pimpl_->db_));
     transaction->Begin();
 
     SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "SELECT seq, fileUuid, fileSize FROM Cache WHERE bundle=? AND item=?");
@@ -499,7 +500,7 @@ namespace OrthancPlugins
     using namespace Orthanc;
     SanityCheck();
 
-    std::auto_ptr<SQLite::Transaction> transaction(new SQLite::Transaction(pimpl_->db_));
+    std::unique_ptr<SQLite::Transaction> transaction(new SQLite::Transaction(pimpl_->db_));
     transaction->Begin();
 
     Bundle bundle = GetBundle(bundleIndex);

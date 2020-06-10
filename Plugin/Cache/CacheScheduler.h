@@ -24,7 +24,9 @@
 #include "CacheManager.h"
 #include "ICacheFactory.h"
 #include "IPrefetchPolicy.h"
-#include <Core/MultiThreading/SharedMessageQueue.h>
+
+#include <Compatibility.h>  // For std::unique_ptr<>
+#include <MultiThreading/SharedMessageQueue.h>
 
 #include <boost/thread.hpp>
 #include <stdio.h>
@@ -40,13 +42,13 @@ namespace OrthancPlugins
 
     typedef std::map<int, BundleScheduler*>  BundleSchedulers;
 
-    size_t                          maxPrefetchSize_;
-    boost::mutex                    cacheMutex_;
-    boost::mutex                    factoryMutex_;
-    boost::recursive_mutex          policyMutex_;
-    CacheManager&                   cache_;
-    std::auto_ptr<IPrefetchPolicy>  policy_;
-    BundleSchedulers                bundles_;
+    size_t                            maxPrefetchSize_;
+    boost::mutex                      cacheMutex_;
+    boost::mutex                      factoryMutex_;
+    boost::recursive_mutex            policyMutex_;
+    CacheManager&                     cache_;
+    std::unique_ptr<IPrefetchPolicy>  policy_;
+    BundleSchedulers                  bundles_;
 
     void ApplyPrefetchPolicy(int bundle,
                              const std::string& item,
