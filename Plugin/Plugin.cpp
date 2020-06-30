@@ -55,9 +55,6 @@
 
 
 
-static OrthancPluginContext* context_ = NULL;
-
-
 class CacheContext
 {
 private:
@@ -99,7 +96,7 @@ private:
         // On the reception of a new instance, indalidate the parent series of the instance
         std::string uri = "/instances/" + std::string(instanceId);
         Json::Value instance;
-        if (OrthancPlugins::GetJsonFromOrthanc(instance, context_, uri))
+        if (OrthancPlugins::GetJsonFromOrthanc(instance, OrthancPlugins::GetGlobalContext(), uri))
         {
           std::string seriesId = instance["ParentSeries"].asString();
           cache->GetScheduler().Invalidate(OrthancPlugins::CacheBundle_SeriesInformation, seriesId);
@@ -115,7 +112,7 @@ public:
     boost::filesystem::path p(path);
     db_.Open((p / "cache.db").string());
 
-    cache_.reset(new OrthancPlugins::CacheManager(context_, db_, storage_));
+    cache_.reset(new OrthancPlugins::CacheManager(OrthancPlugins::GetGlobalContext(), db_, storage_));
     //cache_->SetSanityCheckEnabled(true);  // For debug
 
     scheduler_.reset(new OrthancPlugins::CacheScheduler(*cache_, 100));
@@ -184,7 +181,7 @@ static OrthancPluginErrorCode ServeCache(OrthancPluginRestOutput* output,
   {
     if (request->method != OrthancPluginHttpMethod_Get)
     {
-      OrthancPluginSendMethodNotAllowed(context_, output, "GET");
+      OrthancPluginSendMethodNotAllowed(OrthancPlugins::GetGlobalContext(), output, "GET");
       return OrthancPluginErrorCode_Success;
     }
 
@@ -193,11 +190,11 @@ static OrthancPluginErrorCode ServeCache(OrthancPluginRestOutput* output,
 
     if (cache_->GetScheduler().Access(content, bundle, id))
     {
-      OrthancPluginAnswerBuffer(context_, output, content.c_str(), content.size(), "application/json");
+      OrthancPluginAnswerBuffer(OrthancPlugins::GetGlobalContext(), output, content.c_str(), content.size(), "application/json");
     }
     else
     {
-      OrthancPluginSendHttpStatusCode(context_, output, 404);
+      OrthancPluginSendHttpStatusCode(OrthancPlugins::GetGlobalContext(), output, 404);
     }
 
     return OrthancPluginErrorCode_Success;
@@ -229,7 +226,7 @@ static OrthancPluginErrorCode ServeWebViewer(OrthancPluginRestOutput* output,
 {
   if (request->method != OrthancPluginHttpMethod_Get)
   {
-    OrthancPluginSendMethodNotAllowed(context_, output, "GET");
+    OrthancPluginSendMethodNotAllowed(OrthancPlugins::GetGlobalContext(), output, "GET");
     return OrthancPluginErrorCode_Success;
   }
 
@@ -241,12 +238,12 @@ static OrthancPluginErrorCode ServeWebViewer(OrthancPluginRestOutput* output,
   {
     Orthanc::SystemToolbox::ReadFile(s, path);
     const char* resource = s.size() ? s.c_str() : NULL;
-    OrthancPluginAnswerBuffer(context_, output, resource, s.size(), mime);
+    OrthancPluginAnswerBuffer(OrthancPlugins::GetGlobalContext(), output, resource, s.size(), mime);
   }
   catch (Orthanc::OrthancException&)
   {
     LOG(ERROR) << "Inexistent file in served folder: " << path;
-    OrthancPluginSendHttpStatusCode(context_, output, 404);
+    OrthancPluginSendHttpStatusCode(OrthancPlugins::GetGlobalContext(), output, 404);
   }
 
   return OrthancPluginErrorCode_Success;
@@ -262,7 +259,7 @@ static OrthancPluginErrorCode ServeEmbeddedFolder(OrthancPluginRestOutput* outpu
 {
   if (request->method != OrthancPluginHttpMethod_Get)
   {
-    OrthancPluginSendMethodNotAllowed(context_, output, "GET");
+    OrthancPluginSendMethodNotAllowed(OrthancPlugins::GetGlobalContext(), output, "GET");
     return OrthancPluginErrorCode_Success;
   }
 
@@ -275,14 +272,14 @@ static OrthancPluginErrorCode ServeEmbeddedFolder(OrthancPluginRestOutput* outpu
     Orthanc::EmbeddedResources::GetDirectoryResource(s, folder, path.c_str());
 
     const char* resource = s.size() ? s.c_str() : NULL;
-    OrthancPluginAnswerBuffer(context_, output, resource, s.size(), mime);
+    OrthancPluginAnswerBuffer(OrthancPlugins::GetGlobalContext(), output, resource, s.size(), mime);
 
     return OrthancPluginErrorCode_Success;
   }
   catch (std::runtime_error&)
   {
     LOG(ERROR) << "Unknown static resource in plugin: " << request->groups[0];
-    OrthancPluginSendHttpStatusCode(context_, output, 404);
+    OrthancPluginSendHttpStatusCode(OrthancPlugins::GetGlobalContext(), output, 404);
     return OrthancPluginErrorCode_Success;
   }
 }
@@ -297,24 +294,24 @@ static OrthancPluginErrorCode IsStableSeries(OrthancPluginRestOutput* output,
   {
     if (request->method != OrthancPluginHttpMethod_Get)
     {
-      OrthancPluginSendMethodNotAllowed(context_, output, "GET");
+      OrthancPluginSendMethodNotAllowed(OrthancPlugins::GetGlobalContext(), output, "GET");
       return OrthancPluginErrorCode_Success;
     }
 
     const std::string id = request->groups[0];
     Json::Value series;
 
-    if (OrthancPlugins::GetJsonFromOrthanc(series, context_, "/series/" + id) &&
+    if (OrthancPlugins::GetJsonFromOrthanc(series, OrthancPlugins::GetGlobalContext(), "/series/" + id) &&
         series.type() == Json::objectValue)
     {
       bool value = (series["IsStable"].asBool() ||
                     series["Status"].asString() == "Complete");
       std::string answer = value ? "true" : "false";
-      OrthancPluginAnswerBuffer(context_, output, answer.c_str(), answer.size(), "application/json");
+      OrthancPluginAnswerBuffer(OrthancPlugins::GetGlobalContext(), output, answer.c_str(), answer.size(), "application/json");
     }
     else
     {
-      OrthancPluginSendHttpStatusCode(context_, output, 404);
+      OrthancPluginSendHttpStatusCode(OrthancPlugins::GetGlobalContext(), output, 404);
     }
 
     return OrthancPluginErrorCode_Success;
@@ -344,7 +341,7 @@ void ParseConfiguration(int& decodingThreads,
 {
   /* Read the configuration of the Web viewer */
   Json::Value configuration;
-  if (!OrthancPlugins::ReadConfiguration(configuration, context_))
+  if (!OrthancPlugins::ReadConfiguration(configuration, OrthancPlugins::GetGlobalContext()))
   {
     throw Orthanc::OrthancException(Orthanc::ErrorCode_BadFileFormat);    
   }
@@ -395,18 +392,23 @@ extern "C"
     using namespace OrthancPlugins;
 
     OrthancPlugins::SetGlobalContext(context);
+
+#if defined(ORTHANC_FRAMEWORK_VERSION_IS_ABOVE)  // This indicates Orthanc framework >= 1.7.2
     Orthanc::Logging::InitializePluginContext(context);
-    context_ = context;
+#else
+    Orthanc::Logging::Initialize(context);
+#endif
+
     assert(DisplayPerformanceWarning());
     LOG(WARNING) << "Initializing the Web viewer";
 
 
     /* Check the version of the Orthanc core */
-    if (OrthancPluginCheckVersion(context_) == 0)
+    if (OrthancPluginCheckVersion(context) == 0)
     {
       char info[1024];
       sprintf(info, "Your version of Orthanc (%s) must be above %d.%d.%d to run this plugin",
-              context_->orthancVersion,
+              context->orthancVersion,
               ORTHANC_PLUGINS_MINIMAL_MAJOR_NUMBER,
               ORTHANC_PLUGINS_MINIMAL_MINOR_NUMBER,
               ORTHANC_PLUGINS_MINIMAL_REVISION_NUMBER);
@@ -414,7 +416,7 @@ extern "C"
       return -1;
     }
 
-    OrthancPluginSetDescription(context_, "Provides a Web viewer of DICOM series within Orthanc.");
+    OrthancPluginSetDescription(context, "Provides a Web viewer of DICOM series within Orthanc.");
 
 
     /* By default, use half of the available processing cores for the decoding of DICOM images */
@@ -447,10 +449,10 @@ extern "C"
       std::string orthancVersion("unknown"), webViewerVersion("unknown");
       bool clear = false;
       if (!scheduler.LookupProperty(orthancVersion, CacheProperty_OrthancVersion) ||
-          orthancVersion != std::string(context_->orthancVersion))
+          orthancVersion != std::string(context->orthancVersion))
       {
         LOG(WARNING) << "The version of Orthanc has changed from \"" << orthancVersion
-                     << "\" to \"" << context_->orthancVersion
+                     << "\" to \"" << context->orthancVersion
                      << "\": The cache of the Web viewer will be cleared";
         clear = true;
       }
@@ -470,7 +472,7 @@ extern "C"
       {
         LOG(WARNING) << "Clearing the cache of the Web viewer";
         scheduler.Clear();
-        scheduler.SetProperty(CacheProperty_OrthancVersion, context_->orthancVersion);
+        scheduler.SetProperty(CacheProperty_OrthancVersion, context->orthancVersion);
         scheduler.SetProperty(CacheProperty_WebViewerVersion, ORTHANC_PLUGIN_VERSION);
       }
       else
@@ -480,11 +482,11 @@ extern "C"
 
 
       /* Configure the cache */
-      scheduler.RegisterPolicy(new ViewerPrefetchPolicy(context_));
+      scheduler.RegisterPolicy(new ViewerPrefetchPolicy(context));
       scheduler.Register(CacheBundle_SeriesInformation, 
-                         new SeriesInformationAdapter(context_, scheduler), 1);
+                         new SeriesInformationAdapter(context, scheduler), 1);
       scheduler.Register(CacheBundle_DecodedImage, 
-                         new DecodedImageAdapter(context_), decodingThreads);
+                         new DecodedImageAdapter(context), decodingThreads);
 
 
       /* Set the quotas */
@@ -514,9 +516,9 @@ extern "C"
 
 
     /* Install the callbacks */
-    OrthancPluginRegisterRestCallbackNoLock(context_, "/web-viewer/series/(.*)", ServeCache<CacheBundle_SeriesInformation>);
-    OrthancPluginRegisterRestCallbackNoLock(context_, "/web-viewer/is-stable-series/(.*)", IsStableSeries);
-    OrthancPluginRegisterRestCallbackNoLock(context_, "/web-viewer/instances/(.*)", ServeCache<CacheBundle_DecodedImage>);
+    OrthancPluginRegisterRestCallbackNoLock(context, "/web-viewer/series/(.*)", ServeCache<CacheBundle_SeriesInformation>);
+    OrthancPluginRegisterRestCallbackNoLock(context, "/web-viewer/is-stable-series/(.*)", IsStableSeries);
+    OrthancPluginRegisterRestCallbackNoLock(context, "/web-viewer/instances/(.*)", ServeCache<CacheBundle_DecodedImage>);
     OrthancPluginRegisterRestCallbackNoLock(context, "/web-viewer/libs/(.*)", ServeEmbeddedFolder<Orthanc::EmbeddedResources::JAVASCRIPT_LIBS>);
 
 #if ORTHANC_STANDALONE == 1
@@ -531,7 +533,7 @@ extern "C"
     /* Extend the default Orthanc Explorer with custom JavaScript */
     std::string explorer;
     Orthanc::EmbeddedResources::GetFileResource(explorer, Orthanc::EmbeddedResources::ORTHANC_EXPLORER);
-    OrthancPluginExtendOrthancExplorer(context_, explorer.c_str());
+    OrthancPluginExtendOrthancExplorer(context, explorer.c_str());
 
     return 0;
   }
