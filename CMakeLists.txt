@@ -48,15 +48,6 @@ set(ORTHANC_FRAMEWORK_STATIC OFF CACHE BOOL "If linking against the Orthanc fram
 mark_as_advanced(ORTHANC_FRAMEWORK_STATIC)
 
 
-if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
-    ${CMAKE_SYSTEM_NAME} STREQUAL "kFreeBSD" OR
-    ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
-    ${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD")
-  set(ENABLE_PLUGINS_VERSION_SCRIPT OFF)
-  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--version-script=${CMAKE_SOURCE_DIR}/Resources/Orthanc/Plugins/VersionScriptPlugins.map")
-endif()
-
-
 # Download and setup the Orthanc framework
 if (ORTHANC_FRAMEWORK_SOURCE STREQUAL "system")
   set(ENABLE_GOOGLE_TEST ON)
@@ -83,6 +74,7 @@ endif()
 
 
 include(${CMAKE_SOURCE_DIR}/Resources/CMake/JavaScriptLibraries.cmake)
+include(${CMAKE_SOURCE_DIR}/Resources/Orthanc/Plugins/OrthancPluginsExports.cmake)
 
 
 # Check that the Orthanc SDK headers are available
