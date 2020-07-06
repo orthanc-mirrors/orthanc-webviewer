@@ -21,9 +21,9 @@
 
 #pragma once
 
+#include "../Resources/Orthanc/Plugins/OrthancPluginCppWrapper.h"
 #include "Cache/ICacheFactory.h"
 
-#include <OrthancPluginCppWrapper.h>
 #include <stdint.h>
 #include <json/value.h>
 

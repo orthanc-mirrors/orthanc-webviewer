@@ -19,6 +19,7 @@
  **/
 
 
+#include "../Resources/Orthanc/Plugins/OrthancPluginCppWrapper.h"
 #include "ViewerToolbox.h"
 #include "ViewerPrefetchPolicy.h"
 #include "DecodedImageAdapter.h"
@@ -28,7 +29,6 @@
 #include <OrthancException.h>
 #include <SystemToolbox.h>
 #include <Toolbox.h>
-#include <OrthancPluginCppWrapper.h>
 
 #include <boost/thread.hpp>
 #include <boost/lexical_cast.hpp>

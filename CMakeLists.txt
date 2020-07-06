@@ -52,11 +52,12 @@ mark_as_advanced(ORTHANC_FRAMEWORK_STATIC)
 if (ORTHANC_FRAMEWORK_SOURCE STREQUAL "system")
   set(ENABLE_GOOGLE_TEST ON)
   include(${CMAKE_SOURCE_DIR}/Resources/Orthanc/CMake/DownloadOrthancFramework.cmake)
+  link_libraries(${ORTHANC_FRAMEWORK_LIBRARIES})
 
-  include_directories(
-    ${CMAKE_SOURCE_DIR}/Resources/Orthanc/
-    )
-  link_libraries(OrthancFramework)
+  set(USE_SYSTEM_GOOGLE_TEST ON CACHE BOOL "Use the system version of Google Test")
+  set(USE_GOOGLE_TEST_DEBIAN_PACKAGE OFF CACHE BOOL "Use the sources of Google Test shipped with libgtest-dev (Debian only)")
+  mark_as_advanced(USE_GOOGLE_TEST_DEBIAN_PACKAGE)
+  include(${CMAKE_SOURCE_DIR}/Resources/Orthanc/CMake/GoogleTestConfiguration.cmake)
 else()
   include(${CMAKE_SOURCE_DIR}/Resources/Orthanc/CMake/DownloadOrthancFramework.cmake)
   include(${ORTHANC_FRAMEWORK_ROOT}/Resources/CMake/OrthancFrameworkParameters.cmake)
@@ -152,10 +153,6 @@ set(CORE_SOURCES
   ${CMAKE_SOURCE_DIR}/Plugin/SeriesInformationAdapter.cpp
   
   ${ORTHANC_CORE_SOURCES}
-  )
-
-include_directories(
-  ${CMAKE_SOURCE_DIR}/Resources/Orthanc/Plugins/
   )
 
 add_library(OrthancWebViewer

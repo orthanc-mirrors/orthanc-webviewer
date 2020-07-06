@@ -24,8 +24,8 @@
 #include <OrthancException.h>
 #include <Toolbox.h>
 
-// Gain access to ORTHANC_PLUGINS_VERSION_IS_ABOVE if Orthanc SDK <= 1.3.0
-#include <OrthancPluginCppWrapper.h>
+// To gain access to ORTHANC_PLUGINS_VERSION_IS_ABOVE if Orthanc SDK <= 1.3.0
+#include "../Resources/Orthanc/Plugins/OrthancPluginCppWrapper.h"
 
 #include <json/reader.h>
 #include <stdexcept>
