@@ -50,7 +50,6 @@ mark_as_advanced(ORTHANC_FRAMEWORK_STATIC)
 
 # Download and setup the Orthanc framework
 if (ORTHANC_FRAMEWORK_SOURCE STREQUAL "system")
-  set(ENABLE_GOOGLE_TEST ON)
   include(${CMAKE_SOURCE_DIR}/Resources/Orthanc/CMake/DownloadOrthancFramework.cmake)
   link_libraries(${ORTHANC_FRAMEWORK_LIBRARIES})
 
