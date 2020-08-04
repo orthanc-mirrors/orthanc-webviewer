@@ -1,6 +1,15 @@
 #!/bin/bash
 set -e
 
+# Holy Build Box doesn't contain "hg", there's no "pip" or
+# "easy_install" in Python 2.6 (the version of Holy Build Box) and
+# we're running as a standard user. So we have to install Mercurial
+# from source.
+MERCURIAL=mercurial-5.4.1
+cd /tmp
+curl https://www.mercurial-scm.org/release/${MERCURIAL}.tar.gz > ${MERCURIAL}.tar.gz
+tar xvf ${MERCURIAL}.tar.gz
+
 # Activate Holy Build Box environment.
 source /hbb_exe/activate
 
@@ -19,6 +28,8 @@ unset SHLIB_LDFLAGS
 unset LD_LIBRARY_PATH
 unset LIBRARY_PATH
 
+export PATH=${PATH}:/tmp/${MERCURIAL}/
+
 mkdir /tmp/source-writeable
 
 cp -r /source/CMakeLists.txt /tmp/source-writeable/
@@ -29,8 +40,6 @@ cp -r /source/WebApplication /tmp/source-writeable/
 
 cmake /tmp/source-writeable \
     -DCMAKE_BUILD_TYPE=$1 -DSTATIC_BUILD=ON \
-    -DORTHANC_FRAMEWORK_SOURCE=web \
-    -DORTHANC_FRAMEWORK_VERSION=1.7.2 \
     -DCMAKE_INSTALL_PREFIX=/target 
 
 make -j`nproc`
