@@ -2,6 +2,7 @@ Pending changes in the mainline
 ===============================
 
 * Support of dynamic linking against the system-wide Orthanc framework library
+* Upgrade to Orthanc framework 1.7.2
 
 
 Version 2.6 (2020-05-26)
@@ -15,14 +16,14 @@ Version 2.6 (2020-05-26)
   are now transmitted to the viewer and included as headers in every
   HTTP request to the Rest API easing the usage of the Authorization
   plugin
-* Upgrade to Orthanc framework to 1.7.0
+* Upgrade to Orthanc framework 1.7.0
 
 
 Version 2.5 (2019-02-27)
 ========================
 
 * Upgrade to GDCM 2.8.8 for static builds
-* Upgrade to Orthanc framework to 1.5.5
+* Upgrade to Orthanc framework 1.5.5
 
 
 Version 2.4 (2018-04-23)
