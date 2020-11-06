@@ -26,6 +26,7 @@
 #include "SeriesInformationAdapter.h"
 
 #include <DicomFormat/DicomMap.h>
+#include <Logging.h>
 #include <OrthancException.h>
 #include <SystemToolbox.h>
 #include <Toolbox.h>

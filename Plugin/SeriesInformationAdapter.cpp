@@ -23,6 +23,8 @@
 
 #include "ViewerToolbox.h"
 
+#include <Logging.h>
+
 #include <boost/regex.hpp>
 
 namespace OrthancPlugins

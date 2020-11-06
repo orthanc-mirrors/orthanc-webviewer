@@ -25,6 +25,7 @@
 
 #include <Images/ImageBuffer.h>
 #include <Images/ImageProcessing.h>
+#include <Logging.h>
 #include <OrthancException.h>
 #include <Toolbox.h>
 
@@ -288,12 +289,15 @@ namespace OrthancPlugins
       throw Orthanc::OrthancException(Orthanc::ErrorCode_IncompatibleImageSize);
     }
 
-    for (unsigned int y = 0; y < source.GetHeight(); y++)
+    const unsigned int width = source.GetWidth();
+    const unsigned int height = source.GetHeight();
+
+    for (unsigned int y = 0; y < height; y++)
     {
       const uint16_t* p = reinterpret_cast<const uint16_t*>(source.GetConstRow(y));
       uint8_t* q = reinterpret_cast<uint8_t*>(target.GetRow(y));
 
-      for (unsigned int x = 0; x < source.GetWidth(); x++)
+      for (unsigned int x = 0; x < width; x++)
       {
         q[0] = p[0] >> 8;
         q[1] = p[1] >> 8;
@@ -387,12 +391,15 @@ namespace OrthancPlugins
     const float minValue = static_cast<float>(std::numeric_limits<TargetType>::min());
     const float maxValue = static_cast<float>(std::numeric_limits<TargetType>::max());
 
-    for (unsigned int y = 0; y < source.GetHeight(); y++)
+    const unsigned int width = source.GetWidth();
+    const unsigned int height = source.GetHeight();
+
+    for (unsigned int y = 0; y < height; y++)
     {
       const SourceType* p = reinterpret_cast<const SourceType*>(source.GetConstRow(y));
       TargetType* q = reinterpret_cast<TargetType*>(target.GetRow(y));
 
-      for (unsigned int x = 0; x < source.GetWidth(); x++, p++, q++)
+      for (unsigned int x = 0; x < width; x++, p++, q++)
       {
         float v = (scale * static_cast<float>(*p)) + offset;
 

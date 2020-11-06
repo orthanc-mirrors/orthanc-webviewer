@@ -21,6 +21,7 @@
 
 #include "ViewerToolbox.h"
 
+#include <Logging.h>
 #include <OrthancException.h>
 #include <Toolbox.h>
 
