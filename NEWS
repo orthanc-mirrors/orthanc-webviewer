@@ -1,6 +1,10 @@
 Pending changes in the mainline
 ===============================
 
+
+Version 2.7 (2020-12-10)
+========================
+
 * Support of dynamic linking against the system-wide Orthanc framework library
 * Upgrade to Orthanc framework 1.8.1
 
