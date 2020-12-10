@@ -90,7 +90,7 @@ public:
   }
 
   virtual bool Create(std::string& content,
-                      const std::string& key)
+                      const std::string& key) ORTHANC_OVERRIDE
   {
     content = "Bundle " + boost::lexical_cast<std::string>(bundle_) + ", item " + key;
     return true;

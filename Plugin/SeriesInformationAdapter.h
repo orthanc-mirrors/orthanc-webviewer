@@ -43,6 +43,6 @@ namespace OrthancPlugins
     }
 
     virtual bool Create(std::string& content,
-                        const std::string& seriesId);
+                        const std::string& seriesId) ORTHANC_OVERRIDE;
   };
 }

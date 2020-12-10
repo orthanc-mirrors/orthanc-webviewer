@@ -23,6 +23,8 @@
 
 #include "Cache/IPrefetchPolicy.h"
 
+#include <Compatibility.h>
+
 #include <orthanc/OrthancCPlugin.h>
 
 namespace OrthancPlugins
@@ -50,6 +52,6 @@ namespace OrthancPlugins
     virtual void Apply(std::list<CacheIndex>& toPrefetch,
                        CacheScheduler& cache,
                        const CacheIndex& accessed,
-                       const std::string& content);
+                       const std::string& content) ORTHANC_OVERRIDE;
   };
 }
