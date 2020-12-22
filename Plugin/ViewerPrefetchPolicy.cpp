@@ -24,9 +24,7 @@
 #include "ViewerToolbox.h"
 #include "Cache/CacheScheduler.h"
 
-#include <json/value.h>
-#include <json/reader.h>
-
+#include <Toolbox.h>
 
 
 static const Json::Value::ArrayIndex PREFETCH_FORWARD = 10;
@@ -41,8 +39,7 @@ namespace OrthancPlugins
                                          const std::string& content)
   {
     Json::Value json;
-    Json::Reader reader;
-    if (!reader.parse(content, json) ||
+    if (!Orthanc::Toolbox::ReadJson(json, content) ||
         !json.isMember("Slices"))
     {
       return;
@@ -93,8 +90,7 @@ namespace OrthancPlugins
     }
     
     Json::Value series;
-    Json::Reader reader;
-    if (!reader.parse(tmp, series) ||
+    if (!Orthanc::Toolbox::ReadJson(series, tmp) ||
         !series.isMember("Slices"))
     {
       return;

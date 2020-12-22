@@ -31,7 +31,6 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/predicate.hpp>
-#include <json/writer.h>
 #include <boost/regex.hpp>
 
 
@@ -172,9 +171,8 @@ namespace OrthancPlugins
       {
         json["Orthanc"]["PhotometricInterpretation"] = photometric;
       }
-      
-      Json::FastWriter writer;
-      content = writer.write(json);
+
+      Orthanc::Toolbox::WriteFastJson(content, json);
       return true;
     }
     else

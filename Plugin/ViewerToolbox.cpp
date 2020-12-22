@@ -28,7 +28,6 @@
 // To gain access to ORTHANC_PLUGINS_VERSION_IS_ABOVE if Orthanc SDK <= 1.3.0
 #include "../Resources/Orthanc/Plugins/OrthancPluginCppWrapper.h"
 
-#include <json/reader.h>
 #include <stdexcept>
 #include <boost/lexical_cast.hpp>
 #include <sys/stat.h>
@@ -79,10 +78,7 @@ namespace OrthancPlugins
     {
       try
       {
-        const char* data = reinterpret_cast<const char*>(answer.data);
-        Json::Reader reader;
-        if (!reader.parse(data, data + answer.size, json, 
-                          false /* don't collect comments */))
+        if (!Orthanc::Toolbox::ReadJsonWithoutComments(json, answer.data, answer.size))
         {
           return false;
         }
@@ -227,8 +223,7 @@ namespace OrthancPlugins
       OrthancPluginFreeString(context, tmp);      
     }
 
-    Json::Reader reader;
-    if (reader.parse(s, configuration))
+    if (Orthanc::Toolbox::ReadJson(configuration, s))
     {
       return true;
     }
