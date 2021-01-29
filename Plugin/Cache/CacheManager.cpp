@@ -475,7 +475,9 @@ namespace OrthancPlugins
     bool ok;
     try
     {
-      pimpl_->storage_.Read(content, uuid, Orthanc::FileContentType_Unknown);
+      std::unique_ptr<Orthanc::IMemoryBuffer> buffer(
+        pimpl_->storage_.Read(uuid, Orthanc::FileContentType_Unknown));
+      buffer->MoveToString(content);
       ok = (content.size() == size);
     }
     catch (std::runtime_error&)
