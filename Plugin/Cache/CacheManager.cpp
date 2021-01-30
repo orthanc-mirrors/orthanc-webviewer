@@ -184,19 +184,17 @@ namespace OrthancPlugins
                               int bundleIndex,
                               const BundleQuota& quota)
   {
-    using namespace Orthanc;
-
     toRemove.clear();
 
     // Make room in the bundle
     while (!quota.IsSatisfied(bundle))
     {
-      SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "SELECT seq, fileUuid, fileSize FROM Cache WHERE bundle=? ORDER BY seq");
+      Orthanc::SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "SELECT seq, fileUuid, fileSize FROM Cache WHERE bundle=? ORDER BY seq");
       s.BindInt(0, bundleIndex);
 
       if (s.Step())
       {
-        SQLite::Statement t(pimpl_->db_, SQLITE_FROM_HERE, "DELETE FROM Cache WHERE seq=?");
+        Orthanc::SQLite::Statement t(pimpl_->db_, SQLITE_FROM_HERE, "DELETE FROM Cache WHERE seq=?");
         t.BindInt64(0, s.ColumnInt64(0));
         t.Run();
 
@@ -216,10 +214,8 @@ namespace OrthancPlugins
   void CacheManager::EnsureQuota(int bundleIndex,
                                  const BundleQuota& quota)
   {
-    using namespace Orthanc;
-
     // Remove the cached files that exceed the quota
-    std::unique_ptr<SQLite::Transaction> transaction(new SQLite::Transaction(pimpl_->db_));
+    std::unique_ptr<Orthanc::SQLite::Transaction> transaction(new Orthanc::SQLite::Transaction(pimpl_->db_));
     transaction->Begin();
 
     Bundle bundle = GetBundle(bundleIndex);
@@ -241,11 +237,9 @@ namespace OrthancPlugins
 
   void CacheManager::ReadBundleStatistics()
   {
-    using namespace Orthanc;
-
     pimpl_->bundles_.clear();
 
-    SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "SELECT bundle,COUNT(*),SUM(fileSize) FROM Cache GROUP BY bundle");
+    Orthanc::SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "SELECT bundle,COUNT(*),SUM(fileSize) FROM Cache GROUP BY bundle");
     while (s.Step())
     {
       int index = s.ColumnInt(0);
@@ -264,9 +258,7 @@ namespace OrthancPlugins
       return;
     }
 
-    using namespace Orthanc;
-
-    SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "SELECT bundle,COUNT(*),SUM(fileSize) FROM Cache GROUP BY bundle");
+    Orthanc::SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "SELECT bundle,COUNT(*),SUM(fileSize) FROM Cache GROUP BY bundle");
     while (s.Step())
     {
       const Bundle& bundle = GetBundle(s.ColumnInt(0));
@@ -342,9 +334,7 @@ namespace OrthancPlugins
       return;
     }
 
-    using namespace Orthanc;
-
-    std::unique_ptr<SQLite::Transaction> transaction(new SQLite::Transaction(pimpl_->db_));
+    std::unique_ptr<Orthanc::SQLite::Transaction> transaction(new Orthanc::SQLite::Transaction(pimpl_->db_));
     transaction->Begin();
 
     Bundle bundle = GetBundle(bundleIndex);
@@ -355,19 +345,19 @@ namespace OrthancPlugins
 
     // Store the cached content on the disk
     const char* data = content.size() ? &content[0] : NULL;
-    std::string uuid = Toolbox::GenerateUuid();
+    std::string uuid = Orthanc::Toolbox::GenerateUuid();
     pimpl_->storage_.Create(uuid, data, content.size(), Orthanc::FileContentType_Unknown);
 
     // Remove the previous cached value. This might happen if the same
     // item is accessed very quickly twice: Another factory could have
     // been cached a value before the check for existence in Access().
     {
-      SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "SELECT seq, fileUuid, fileSize FROM Cache WHERE bundle=? AND item=?");
+      Orthanc::SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "SELECT seq, fileUuid, fileSize FROM Cache WHERE bundle=? AND item=?");
       s.BindInt(0, bundleIndex);
       s.BindString(1, item);
       if (s.Step())
       {
-        SQLite::Statement t(pimpl_->db_, SQLITE_FROM_HERE, "DELETE FROM Cache WHERE seq=?");
+        Orthanc::SQLite::Statement t(pimpl_->db_, SQLITE_FROM_HERE, "DELETE FROM Cache WHERE seq=?");
         t.BindInt64(0, s.ColumnInt64(0));
         t.Run();
 
@@ -377,7 +367,7 @@ namespace OrthancPlugins
     }
 
     {
-      SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "INSERT INTO Cache VALUES(NULL, ?, ?, ?, ?)");
+      Orthanc::SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "INSERT INTO Cache VALUES(NULL, ?, ?, ?, ?)");
       s.BindInt(0, bundleIndex);
       s.BindString(1, item);
       s.BindString(2, uuid);
@@ -412,13 +402,12 @@ namespace OrthancPlugins
                                    int bundle,
                                    const std::string& item)
   {
-    using namespace Orthanc;
     SanityCheck();
 
-    std::unique_ptr<SQLite::Transaction> transaction(new SQLite::Transaction(pimpl_->db_));
+    std::unique_ptr<Orthanc::SQLite::Transaction> transaction(new Orthanc::SQLite::Transaction(pimpl_->db_));
     transaction->Begin();
 
-    SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "SELECT seq, fileUuid, fileSize FROM Cache WHERE bundle=? AND item=?");
+    Orthanc::SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "SELECT seq, fileUuid, fileSize FROM Cache WHERE bundle=? AND item=?");
     s.BindInt(0, bundle);
     s.BindString(1, item);
     if (!s.Step())
@@ -431,11 +420,11 @@ namespace OrthancPlugins
     size = s.ColumnInt64(2);
 
     // Touch the cache to fulfill the LRU scheme.
-    SQLite::Statement t(pimpl_->db_, SQLITE_FROM_HERE, "DELETE FROM Cache WHERE seq=?");
+    Orthanc::SQLite::Statement t(pimpl_->db_, SQLITE_FROM_HERE, "DELETE FROM Cache WHERE seq=?");
     t.BindInt64(0, seq);
     if (t.Run())
     {
-      SQLite::Statement u(pimpl_->db_, SQLITE_FROM_HERE, "INSERT INTO Cache VALUES(NULL, ?, ?, ?, ?)");
+      Orthanc::SQLite::Statement u(pimpl_->db_, SQLITE_FROM_HERE, "INSERT INTO Cache VALUES(NULL, ?, ?, ?, ?)");
       u.BindInt(0, bundle);
       u.BindString(1, item);
       u.BindString(2, uuid);
@@ -504,15 +493,14 @@ namespace OrthancPlugins
   void CacheManager::Invalidate(int bundleIndex,
                                 const std::string& item)
   {
-    using namespace Orthanc;
     SanityCheck();
 
-    std::unique_ptr<SQLite::Transaction> transaction(new SQLite::Transaction(pimpl_->db_));
+    std::unique_ptr<Orthanc::SQLite::Transaction> transaction(new Orthanc::SQLite::Transaction(pimpl_->db_));
     transaction->Begin();
 
     Bundle bundle = GetBundle(bundleIndex);
 
-    SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "SELECT seq, fileUuid, fileSize FROM Cache WHERE bundle=? AND item=?");
+    Orthanc::SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "SELECT seq, fileUuid, fileSize FROM Cache WHERE bundle=? AND item=?");
     s.BindInt(0, bundleIndex);
     s.BindString(1, item);
     if (s.Step())
@@ -522,7 +510,7 @@ namespace OrthancPlugins
       uint64_t expectedSize = s.ColumnInt64(2);
       bundle.Remove(expectedSize);
 
-      SQLite::Statement t(pimpl_->db_, SQLITE_FROM_HERE, "DELETE FROM Cache WHERE seq=?");
+      Orthanc::SQLite::Statement t(pimpl_->db_, SQLITE_FROM_HERE, "DELETE FROM Cache WHERE seq=?");
       t.BindInt64(0, seq);
       if (t.Run())
       {
@@ -551,12 +539,11 @@ namespace OrthancPlugins
   void CacheManager::SetDefaultQuota(uint32_t maxCount,
                                      uint64_t maxSpace)
   {
-    using namespace Orthanc;
     SanityCheck();
 
     pimpl_->defaultQuota_ = BundleQuota(maxCount, maxSpace);
 
-    SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "SELECT DISTINCT bundle FROM Cache");
+    Orthanc::SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "SELECT DISTINCT bundle FROM Cache");
     while (s.Step())
     {
       EnsureQuota(s.ColumnInt(0), pimpl_->defaultQuota_);
@@ -568,16 +555,15 @@ namespace OrthancPlugins
 
   void CacheManager::Clear()
   {
-    using namespace Orthanc;
     SanityCheck();
 
-    SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "SELECT fileUuid FROM Cache");
+    Orthanc::SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "SELECT fileUuid FROM Cache");
     while (s.Step())
     {
       pimpl_->storage_.Remove(s.ColumnString(0), Orthanc::FileContentType_Unknown);
     }  
 
-    SQLite::Statement t(pimpl_->db_, SQLITE_FROM_HERE, "DELETE FROM Cache");
+    Orthanc::SQLite::Statement t(pimpl_->db_, SQLITE_FROM_HERE, "DELETE FROM Cache");
     t.Run();
 
     ReadBundleStatistics();
@@ -588,17 +574,16 @@ namespace OrthancPlugins
 
   void CacheManager::Clear(int bundle)
   {
-    using namespace Orthanc;
     SanityCheck();
 
-    SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "SELECT fileUuid FROM Cache WHERE bundle=?");
+    Orthanc::SQLite::Statement s(pimpl_->db_, SQLITE_FROM_HERE, "SELECT fileUuid FROM Cache WHERE bundle=?");
     s.BindInt(0, bundle);
     while (s.Step())
     {
       pimpl_->storage_.Remove(s.ColumnString(0), Orthanc::FileContentType_Unknown);
     }  
 
-    SQLite::Statement t(pimpl_->db_, SQLITE_FROM_HERE, "DELETE FROM Cache WHERE bundle=?");
+    Orthanc::SQLite::Statement t(pimpl_->db_, SQLITE_FROM_HERE, "DELETE FROM Cache WHERE bundle=?");
     t.BindInt(0, bundle);
     t.Run();
 

@@ -187,8 +187,6 @@ namespace OrthancPlugins
                                                    const Json::Value& tags,
                                                    OrthancImage& image)
   {
-    using namespace Orthanc;
-
     float windowCenter, windowWidth;
 
     Orthanc::ImageAccessor accessor;
@@ -197,9 +195,9 @@ namespace OrthancPlugins
 
     switch (accessor.GetFormat())
     {
-      case PixelFormat_Grayscale8:
-      case PixelFormat_Grayscale16:
-      case PixelFormat_SignedGrayscale16:
+      case Orthanc::PixelFormat_Grayscale8:
+      case Orthanc::PixelFormat_Grayscale16:
+      case Orthanc::PixelFormat_SignedGrayscale16:
       {
         int64_t a, b;
         Orthanc::ImageProcessing::GetMinMaxIntegerValue(a, b, accessor);
@@ -221,8 +219,8 @@ namespace OrthancPlugins
         break;
       }
 
-      case PixelFormat_RGB24:
-      case PixelFormat_RGB48:
+      case Orthanc::PixelFormat_RGB24:
+      case Orthanc::PixelFormat_RGB48:
         result["minPixelValue"] = 0;
         result["maxPixelValue"] = 255;
         result["color"] = true;
