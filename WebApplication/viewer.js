@@ -424,10 +424,18 @@ $(document).ready(function() {
     success: function(volume) {
       if (volume.Slices.length != 0) {
         instances = volume.Slices;
-        $('#topright').html(volume.PatientID + '<br/>' +
-                            volume.PatientName + '<br/>' +
-                            volume.StudyDescription + '<br/>' +
-                            volume.SeriesDescription + '<br/>');
+        var topRightElement = $('<span>');
+        topRightElement.append($('<span>', { text: volume.PatientID}));
+        topRightElement.append($('<br/>'));
+        topRightElement.append($('<span>', { text: volume.PatientName}));
+        topRightElement.append($('<br/>'));
+        topRightElement.append($('<span>', { text: volume.StudyDescription}));
+        topRightElement.append($('<br/>'));
+        topRightElement.append($('<span>', { text: volume.SeriesDescription}));
+        topRightElement.append($('<br/>'));
+
+        $('#topright').empty();
+        $('#topright').append(topRightElement);
       }
     },
     failure: function() {
