@@ -186,7 +186,7 @@ namespace OrthancPlugins
 
   bool DecodedImageAdapter::GetCornerstoneMetadata(Json::Value& result,
                                                    const Json::Value& tags,
-                                                   OrthancImage& image)
+                                                   const OrthancImage& image)
   {
     float windowCenter, windowWidth;
 
@@ -307,7 +307,7 @@ namespace OrthancPlugins
 
 
   bool  DecodedImageAdapter::EncodeUsingDeflate(Json::Value& result,
-                                                OrthancImage& image)
+                                                const OrthancImage& image)
   {
     Orthanc::ImageAccessor accessor;
     accessor.AssignReadOnly(OrthancPlugins::Convert(image.GetPixelFormat()), image.GetWidth(),
@@ -421,7 +421,7 @@ namespace OrthancPlugins
 
 
   bool  DecodedImageAdapter::EncodeUsingJpeg(Json::Value& result,
-                                             OrthancImage& image,
+                                             const OrthancImage& image,
                                              uint8_t quality /* between 0 and 100 */)
   {
     Orthanc::ImageAccessor accessor;

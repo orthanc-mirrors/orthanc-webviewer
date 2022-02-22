@@ -25,6 +25,8 @@
 #include "../Resources/Orthanc/Plugins/OrthancPluginCppWrapper.h"
 #include "Cache/ICacheFactory.h"
 
+#include <Compatibility.h>
+
 #include <stdint.h>
 #include <json/value.h>
 
@@ -48,13 +50,13 @@ namespace OrthancPlugins
 
     static bool GetCornerstoneMetadata(Json::Value& result,
                                        const Json::Value& tags,
-                                       OrthancImage& image);
+                                       const OrthancImage& image);
 
     static bool EncodeUsingDeflate(Json::Value& result,
-                                   OrthancImage& image);
+                                   const OrthancImage& image);
 
     static bool EncodeUsingJpeg(Json::Value& result,
-                                OrthancImage& image,
+                                const OrthancImage& image,
                                 uint8_t quality /* between 0 and 100 */);
 
     OrthancPluginContext* context_;
@@ -66,6 +68,6 @@ namespace OrthancPlugins
     }
 
     virtual bool Create(std::string& content,
-                        const std::string& uri);  
+                        const std::string& uri) ORTHANC_OVERRIDE;
   };
 }
