@@ -2,11 +2,11 @@ Pending changes in the mainline
 ===============================
 
 
-Version 2.8 (2022-2-10)
+Version 2.8 (2022-02-22)
 ========================
 
-* Fix XSS inside DICOM in Orthanc Web Viewer (as reported by Stuart
-  Kurutac, NCC Group).
+* Fix XSS inside DICOM in Orthanc Web Viewer (as reported by Charlie
+  Hosier, NCC Group).
 
 
 Version 2.7 (2020-12-10)
