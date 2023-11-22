@@ -20,7 +20,7 @@ Version 2.6 (2020-05-26)
 ========================
 
 * Move the GDCM decoder out of the Orthanc Web viewer plugin as a
-  separate plugin: https://book.orthanc-server.com/plugins/gdcm.html
+  separate plugin: https://orthanc.uclouvain.be/book/plugins/gdcm.html
 * Performance: Replaced "OrthancPluginRegisterRestCallback" by
   "OrthancPluginRegisterRestCallbackNoLock"
 * Authorization tokens passed as url search params in Orthanc Explorer

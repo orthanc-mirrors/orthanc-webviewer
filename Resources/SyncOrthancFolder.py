@@ -69,7 +69,7 @@ for f in FILES:
 for f in SDK:
     commands.append([
         'Orthanc-%s' % PLUGIN_SDK_VERSION, 
-        'OrthancServer/Plugins/Include/%s' % f,
+        'Plugins/Include/%s' % f,
         'Sdk-%s/%s' % (PLUGIN_SDK_VERSION, f) 
     ])
 
