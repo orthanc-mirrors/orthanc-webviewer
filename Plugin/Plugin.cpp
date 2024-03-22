@@ -37,6 +37,8 @@
 #include <EmbeddedResources.h>
 #include <boost/filesystem.hpp>
 
+#define ORTHANC_PLUGIN_NAME "web-viewer"
+
 
 /**
  * We force the redefinition of the "ORTHANC_PLUGINS_API" macro, that
@@ -418,7 +420,7 @@ extern "C"
       return -1;
     }
 
-    OrthancPluginSetDescription(context, "Provides a Web viewer of DICOM series within Orthanc.");
+    OrthancPlugins::SetDescription(ORTHANC_PLUGIN_NAME, "Provides a Web viewer of DICOM series within Orthanc.");
 
 
     /* By default, use half of the available processing cores for the decoding of DICOM images */
@@ -535,7 +537,7 @@ extern "C"
     /* Extend the default Orthanc Explorer with custom JavaScript */
     std::string explorer;
     Orthanc::EmbeddedResources::GetFileResource(explorer, Orthanc::EmbeddedResources::ORTHANC_EXPLORER);
-    OrthancPluginExtendOrthancExplorer(context, explorer.c_str());
+    OrthancPlugins::ExtendOrthancExplorer(ORTHANC_PLUGIN_NAME, explorer);
 
     return 0;
   }
@@ -557,7 +559,7 @@ extern "C"
 
   ORTHANC_PLUGINS_API const char* OrthancPluginGetName()
   {
-    return "web-viewer";
+    return ORTHANC_PLUGIN_NAME;
   }
 
 
