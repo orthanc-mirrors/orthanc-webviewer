@@ -30,6 +30,9 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include <list>
+#include <map>
+
 namespace OrthancPlugins
 {
   enum CacheProperty
