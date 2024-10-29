@@ -357,7 +357,7 @@ namespace OrthancPlugins
     assert(converted.GetSize() == converted.GetWidth() * converted.GetHeight() * 
            GetBytesPerPixel(converted.GetFormat()));
     result["Orthanc"]["Compression"] = "Deflate";
-    result["sizeInBytes"] = converted.GetSize();
+    result["sizeInBytes"] = static_cast<Json::Value::UInt64>(converted.GetSize());
 
     std::string z;
     CompressUsingDeflate(z, GetGlobalContext(), converted.GetConstBuffer(), converted.GetSize());
@@ -482,7 +482,7 @@ namespace OrthancPlugins
     
     result["Orthanc"]["IsSigned"] = (accessor.GetFormat() == Orthanc::PixelFormat_SignedGrayscale16);
     result["Orthanc"]["Compression"] = "Jpeg";
-    result["sizeInBytes"] = converted.GetSize();
+    result["sizeInBytes"] = static_cast<Json::Value::UInt64>(converted.GetSize());
 
     std::string jpeg;
     WriteJpegToMemory(jpeg, GetGlobalContext(), converted, quality);
