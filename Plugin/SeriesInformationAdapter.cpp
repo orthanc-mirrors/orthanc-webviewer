@@ -36,11 +36,18 @@ namespace OrthancPlugins
   {
     LOG(INFO) << "Ordering instances of series: " << seriesId;
 
-    Json::Value series, study, patient, ordered;
-    if (!GetJsonFromOrthanc(series, context_, "/series/" + seriesId) ||
-        !GetJsonFromOrthanc(study, context_, "/studies/" + series["ID"].asString() + "/module?simplify") ||
-        !GetJsonFromOrthanc(patient, context_, "/studies/" + series["ID"].asString() + "/module-patient?simplify") ||
-        !GetJsonFromOrthanc(ordered, context_, "/series/" + series["ID"].asString() + "/ordered-slices") ||
+    Json::Value series;
+    if (!GetJsonFromOrthanc(series, context_, "/series/" + seriesId))
+    {
+      return false;
+    }
+
+    const std::string studyId = series["ParentStudy"].asString();
+
+    Json::Value study, patient, ordered;
+    if (!GetJsonFromOrthanc(study, context_, "/studies/" + studyId + "/module?simplify") ||
+        !GetJsonFromOrthanc(patient, context_, "/studies/" + studyId + "/module-patient?simplify") ||
+        !GetJsonFromOrthanc(ordered, context_, "/series/" + seriesId + "/ordered-slices") ||
         !series.isMember("Instances") ||
         series["Instances"].type() != Json::arrayValue)
     {
