@@ -1,7 +1,12 @@
 Pending changes in the mainline
 ===============================
 
+
+Version 2.10 (2025-04-15)
+=========================
+
 * Fix compatibility with Orthanc >= 1.12.5 (the images were not displayed)
+* Upgrade to Orthanc framework 1.12.7
 
 
 Version 2.9 (2024-03-26)
