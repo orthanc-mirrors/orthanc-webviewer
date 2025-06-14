@@ -467,8 +467,14 @@ namespace OrthancPlugins
     try
     {
 #if defined(ORTHANC_FRAMEWORK_VERSION_IS_ABOVE) && ORTHANC_FRAMEWORK_VERSION_IS_ABOVE(1, 9, 0) 
-      std::unique_ptr<Orthanc::IMemoryBuffer> buffer(
-        pimpl_->storage_.Read(uuid, Orthanc::FileContentType_Unknown));
+      std::unique_ptr<Orthanc::IMemoryBuffer> buffer;
+
+#  if ORTHANC_FRAMEWORK_VERSION_IS_ABOVE(1, 12, 8)
+      pimpl_->storage_.ReadWhole(uuid, Orthanc::FileContentType_Unknown);
+#  else
+      pimpl_->storage_.Read(uuid, Orthanc::FileContentType_Unknown);
+#  endif
+
       buffer->MoveToString(content);
 #else
       pimpl_->storage_.Read(content, uuid, Orthanc::FileContentType_Unknown);
