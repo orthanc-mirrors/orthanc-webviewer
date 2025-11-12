@@ -38,8 +38,7 @@ Version 2.6 (2020-05-26)
   "OrthancPluginRegisterRestCallbackNoLock"
 * Authorization tokens passed as url search params in Orthanc Explorer
   are now transmitted to the viewer and included as headers in every
-  HTTP request to the Rest API easing the usage of the Authorization
-  plugin
+  HTTP request to the REST API easing the usage of the Authorization plugin
 * Upgrade to Orthanc framework 1.7.0
 
 
